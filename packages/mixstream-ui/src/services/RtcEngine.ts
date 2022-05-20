@@ -105,11 +105,16 @@ export class RtcEngine extends EventEmitter {
   }
 
   async publishTrancodedVideoTrack() {
-    if (this._hasPublished) {
-      return;
-    }
     const config = this.localTranscoder.getConfig();
     console.log('🚀 ~ file: RtcEngine.ts ~ line 100 ~ RtcEngine ~ publishTrancodedVideoTrack ~ config', config);
+    if (this._hasPublished) {
+      const code = this._rtcEngine.updateLocalTranscoderConfiguration(config);
+      if (code !== 0) {
+        throw new Error(`Failed to updateLocalTranscoderConfiguration with error code: ${code}`);
+      }
+      return code;
+    }
+
     let code = await this._rtcEngine.startLocalVideoTranscoder(config);
     if (code !== 0) {
       return;
@@ -141,14 +146,15 @@ export class RtcEngine extends EventEmitter {
       publishCustomAudioTrackAec: false,
       audienceLatencyLevel: 2,
     };
+    const { token, channel, uid } = this._info as any;
+    console.log('🚀 ~ file: joinChannel', this._info);
+    this.joinChannel(token, channel, uid);
+
     code = this._rtcEngine.updateChannelMediaOptions(data);
     if (code !== 0) {
-      throw new Error(`Failed to publishTrancodedVideoTrack with error code: ${code}`);
+      throw new Error(`Failed to updateChannelMediaOptions with error code: ${code}`);
     }
 
-    const { token, channel, uid } = this._info as any;
-    console.log('🚀 ~ file: RtcEngine.ts ~ line 149 ~ RtcEngine ~ publishTrancodedVideoTrack ~ this._info', this._info);
-    this.joinChannel(token, channel, uid);
     this._hasPublished = true;
     console.log('推流成功');
     return code;

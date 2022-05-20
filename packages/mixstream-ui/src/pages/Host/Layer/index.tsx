@@ -1,7 +1,7 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
 import { FC, useCallback, useId, useMemo, useRef, useState } from 'react';
 import { Item, ItemProps, Menu, Separator, Submenu, useContextMenu } from 'react-contexify';
-import { useEffectOnce, useWindowSize } from 'react-use';
+import { useMount, useWindowSize } from 'react-use';
 import { RtcEngine, ScreenCaptureFullScreenRect } from '../../../services/RtcEngine';
 import { DisplayInfo, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../services/type';
 import './index.css';
@@ -130,7 +130,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
     [rtcEngine]
   );
 
-  useEffectOnce(() => {
+  useMount(() => {
     if (domRef.current && config) {
       console.log(`🚀  useEffectOnce ~ config ${uid}`, config);
       if (config.sourceType >= 2) {

@@ -19,6 +19,7 @@ const HostMain = () => {
   const { openModal: openShareCameraModal } = useShareCamera();
   const { openModal: openShareScreenModal } = useShareScreen();
   const { streams, addStream } = useStream();
+
   console.log('🚀 ~ file: index.tsx ~ line 22 ~ HostMain ~ streams', streams);
 
   useEffect(() => {

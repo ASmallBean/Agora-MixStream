@@ -23,7 +23,7 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
     const { appId, token, uid } = cameraStream;
     const engine = RtcEngine.singleton(appId);
     engine.joinChannelInit();
-    // engine.joinChannel(token, channel, uid);
+    engine.storeInfo(token, channel, uid);
     setRtcEngine(engine);
   }, [profile, session, rtcEngine]);
 

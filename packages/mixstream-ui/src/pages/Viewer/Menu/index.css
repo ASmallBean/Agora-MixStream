@@ -1,0 +1,10 @@
+.viewer-menu {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewer-menu > * {
+  margin: 0 10px;
+}

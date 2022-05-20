@@ -1,0 +1,15 @@
+.landing-page {
+  height: 100vh;
+  width: 100vw;
+  background-color: #038ff4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-from {
+  background-color: #fff;
+  padding: 40px 40px 10px;
+  border-radius: 10px;
+  width: 400px;
+}

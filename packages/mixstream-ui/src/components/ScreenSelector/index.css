@@ -1,0 +1,60 @@
+.screen-selector .ant-modal-body {
+  min-height: 360px;
+}
+.screen-screen-options {
+  padding-bottom: 8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 8px;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #303030;
+  border-radius: 4px;
+}
+
+.list .item {
+  margin: 10px;
+  width: 230px;
+  background: #efefef78;
+  padding: 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+}
+
+.list .item.checked {
+  background-color: #177ddc;
+  border-color: #177ddc;
+}
+
+.list .item:hover {
+  border-color: #177ddc;
+}
+
+.list .item .thumbnail {
+  height: 120px;
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+}
+
+.list .item .thumbnail > img {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.list .item .name {
+  font-size: 14px;
+  margin-top: 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+}
+.list .item.checked .name {
+  color: #fff;
+}

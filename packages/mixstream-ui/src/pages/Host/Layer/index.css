@@ -1,0 +1,9 @@
+.layer {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 10%;
+  min-height: 10%;
+}

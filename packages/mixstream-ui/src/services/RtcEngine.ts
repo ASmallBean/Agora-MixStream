@@ -1,5 +1,6 @@
 import AgoraRtcEngine from 'agora-electron-sdk';
 import {
+  ChannelMediaOptions,
   LocalTranscoderConfiguration,
   ScreenCaptureConfiguration,
   TranscodingVideoStream,
@@ -47,7 +48,6 @@ export class RtcEngine extends EventEmitter {
     return this.instance;
   }
 
-  private _hasPublished: boolean = false;
   private _rtcEngine: AgoraRtcEngine;
 
   localTranscoder = new LocalTranscoder();
@@ -73,12 +73,7 @@ export class RtcEngine extends EventEmitter {
     });
   }
 
-  private _info: { token: string; channel: string; uid: number } | undefined;
-  storeInfo(token: string, channel: string, uid: number) {
-    this._info = { token, channel, uid };
-  }
-
-  async joinChannelInit() {
+  async init() {
     this._rtcEngine.setChannelProfile(0);
     this._rtcEngine.setClientRole(1);
     this._rtcEngine.enableVideo();
@@ -87,38 +82,18 @@ export class RtcEngine extends EventEmitter {
     this._rtcEngine.enableLocalVideo(false);
   }
 
+  private _isJoined = false;
+
   joinChannel(token: string, channel: string, uid: number) {
-    console.log('🚀 joinChannel ~ uid', uid);
+    if (this._isJoined) {
+      return;
+    }
     const code = this._rtcEngine.joinChannel(token, channel, '', uid);
     if (code !== 0) {
       throw new Error(`Failed to join channel with error code: ${code}`);
     }
-    return code;
-  }
+    this._isJoined = true;
 
-  async leaveChannel() {
-    const code = this._rtcEngine.leaveChannel();
-    if (code !== 0) {
-      throw new Error(`Failed to leave channel with error code: ${code}`);
-    }
-    return code;
-  }
-
-  async publishTrancodedVideoTrack() {
-    const config = this.localTranscoder.getConfig();
-    console.log('🚀 ~ file: RtcEngine.ts ~ line 100 ~ RtcEngine ~ publishTrancodedVideoTrack ~ config', config);
-    if (this._hasPublished) {
-      const code = this._rtcEngine.updateLocalTranscoderConfiguration(config);
-      if (code !== 0) {
-        throw new Error(`Failed to updateLocalTranscoderConfiguration with error code: ${code}`);
-      }
-      return code;
-    }
-
-    let code = await this._rtcEngine.startLocalVideoTranscoder(config);
-    if (code !== 0) {
-      return;
-    }
     const data: any = {
       publishCameraTrack: false,
       publishAudioTrack: false,
@@ -146,17 +121,48 @@ export class RtcEngine extends EventEmitter {
       publishCustomAudioTrackAec: false,
       audienceLatencyLevel: 2,
     };
-    const { token, channel, uid } = this._info as any;
-    console.log('🚀 ~ file: joinChannel', this._info);
-    this.joinChannel(token, channel, uid);
+    return this.updateChannelMediaOptions(data);
+  }
 
-    code = this._rtcEngine.updateChannelMediaOptions(data);
+  leaveChannel() {
+    const code = this._rtcEngine.leaveChannel();
+    if (code !== 0) {
+      throw new Error(`Failed to leave channel with error code: ${code}`);
+    }
+    this._isJoined = false;
+    return code;
+  }
+
+  updateChannelMediaOptions(data: ChannelMediaOptions) {
+    const code = this._rtcEngine.updateChannelMediaOptions(data);
     if (code !== 0) {
       throw new Error(`Failed to updateChannelMediaOptions with error code: ${code}`);
     }
+    return code;
+  }
 
-    this._hasPublished = true;
-    console.log('推流成功');
+  startLocalVideoTranscoder() {
+    const config = this.localTranscoder.getConfig();
+    let code = this._rtcEngine.startLocalVideoTranscoder(config);
+    if (code !== 0) {
+      throw new Error(`Failed to startLocalVideoTranscoder with error code: ${code}`);
+    }
+    return code;
+  }
+  stopLocalVideoTranscoder() {
+    let code = this._rtcEngine.stopLocalVideoTranscoder();
+    if (code !== 0) {
+      throw new Error(`Failed to stopLocalVideoTranscoder with error code: ${code}`);
+    }
+    return code;
+  }
+
+  updateLocalTranscoderConfiguration() {
+    const config = this.localTranscoder.getConfig();
+    const code = this._rtcEngine.updateLocalTranscoderConfiguration(config);
+    if (code !== 0) {
+      throw new Error(`Failed to updateLocalTranscoderConfiguration with error code: ${code}`);
+    }
     return code;
   }
 
@@ -195,19 +201,29 @@ export class RtcEngine extends EventEmitter {
     return this._rtcEngine.enableLocalAudio(false);
   }
 
-  async setupLocalView(type: number, deviceId: number, attachEl: HTMLElement) {
+  setupLocalViewAndPreview(type: number, deviceId: number, attachEl: HTMLElement, sourceType: VIDEO_SOURCE_TYPE) {
+    console.log(`🚀 ~ setupLocalView type:${type}  deviceId:${deviceId}`);
     const code = this._rtcEngine.setupLocalView(type, deviceId, attachEl, { append: false });
     if (code !== 0) {
-      throw new Error(`Failed to camera setupLocalView with error code: ${code}`);
+      throw new Error(`Failed to setupLocalView with error code: ${code}`);
+    }
+    return this.startPreview(sourceType);
+  }
+
+  startPreview(sourceType: VIDEO_SOURCE_TYPE) {
+    console.log('🚀 ~ startPreview sourceType:', sourceType);
+    const code = this._rtcEngine.startPreview(sourceType);
+    if (code !== 0) {
+      throw new Error(`Failed to startPreview with error code: ${code}`);
     }
     return code;
   }
 
-  public async getScreenDisplaysInfo() {
+  async getScreenDisplaysInfo() {
     return this._rtcEngine.getScreenDisplaysInfo() as DisplayInfo[];
   }
 
-  public async getScreenWindowsInfo() {
+  async getScreenWindowsInfo() {
     return this._rtcEngine.getScreenWindowsInfo() as WindowInfo[];
   }
 
@@ -225,7 +241,7 @@ export class RtcEngine extends EventEmitter {
     return !flat;
   }
 
-  async startCameraCapture(type: VIDEO_SOURCE_TYPE, deviceId: string, option?: Partial<VideoFormat>): Promise<number> {
+  startCameraCapture(type: VIDEO_SOURCE_TYPE, deviceId: string, option?: Partial<VideoFormat>): number {
     this._rtcEngine.enableVideo();
     this._rtcEngine.enableLocalVideo(true);
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY;
@@ -324,6 +340,7 @@ export class LocalTranscoder {
   };
 
   getConfig() {
+    console.log('🚀 ~ file: _localTranscoderConfig ~ config', this._localTranscoderConfig);
     return this._localTranscoderConfig;
   }
 

@@ -1,4 +1,9 @@
 import { Session } from 'mixstream-shared';
 import { createContext } from 'react';
-
-export const SessionContext = createContext<Session | undefined>(undefined);
+export const defaultSession = {
+  id: '',
+  channel: '',
+  expiredAt: new Date(),
+  createdAt: new Date(),
+};
+export const SessionContext = createContext<Session>(defaultSession);

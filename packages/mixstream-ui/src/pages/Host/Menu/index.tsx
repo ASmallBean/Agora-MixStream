@@ -3,7 +3,10 @@ import _ from 'lodash';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 import { useEngine } from '../../../hooks/engines';
+import { useProfile } from '../../../hooks/profile';
+import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
+import { findVideoStreamFromProfile } from '../../../services/api';
 import { hostPath } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
@@ -25,6 +28,8 @@ const bitrateOptions = Object.keys(bitrates).map((v) => ({ label: v, value: bitr
 const HostMenu = () => {
   const intl = useIntl();
   const { rtcEngine } = useEngine();
+  const { profile } = useProfile();
+  const { channel } = useSession();
   const {
     audio,
     setAudio,
@@ -135,9 +140,19 @@ const HostMenu = () => {
           if (rtcEngine) {
             let code;
             if (play) {
+              code = rtcEngine.stopLocalVideoTranscoder();
               // 停止推流
             } else {
-              code = await rtcEngine.publishTrancodedVideoTrack();
+              code = rtcEngine.startLocalVideoTranscoder();
+              if (code !== 0) {
+                return;
+              }
+              const stream = findVideoStreamFromProfile(profile);
+              if (!stream || !channel) {
+                return;
+              }
+              const { token, uid } = stream;
+              code = rtcEngine.joinChannel(token, channel, uid);
             }
             if (code === 0) {
               setPlay((pre) => !pre);

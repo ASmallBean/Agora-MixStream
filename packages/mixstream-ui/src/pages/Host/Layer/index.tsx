@@ -6,7 +6,12 @@ import { RtcEngine, ScreenCaptureFullScreenRect } from '../../../services/RtcEng
 import { DisplayInfo, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../services/type';
 import './index.css';
 
+export enum LayerType {
+  CAMERA,
+  SCREEN,
+}
 export interface LayerConfig {
+  type: LayerType;
   sourceType: VIDEO_SOURCE_TYPE;
 
   deviceId: string; // 摄像头的id
@@ -59,28 +64,31 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
   const setupCameraLocalView = useCallback(
     async (dom: HTMLDivElement, layerConfig: LayerConfig) => {
       if (rtcEngine && dom) {
+        const { width, height, x, y, sourceType, zOrder, deviceId } = layerConfig;
         setSize((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
-          return computeEquidistantSize({ width: layerConfig.width, height: layerConfig.height }, { max: pre.width });
+          return computeEquidistantSize({ width, height }, { max: pre.width });
         });
-        const code = await rtcEngine.startCameraCapture(layerConfig.sourceType, layerConfig.deviceId, {
-          width: layerConfig.width,
-          height: layerConfig.height,
+
+        let code;
+        code = rtcEngine.startCameraCapture(sourceType, deviceId, {
+          width,
+          height,
         });
         if (code !== 0) {
           return code;
         }
         const videoInputConfig = rtcEngine.localTranscoder.createVideoInputStreamConfig({
-          sourceType: layerConfig.sourceType,
-          x: layerConfig.x,
-          y: layerConfig.y,
-          width: layerConfig.width,
-          height: layerConfig.height,
-          zOrder: layerConfig.zOrder,
+          sourceType,
+          x,
+          y,
+          width,
+          height,
+          zOrder,
         });
         rtcEngine.localTranscoder.addVideoInputStream(videoInputConfig);
-        const deviceId = layerConfig.sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1;
-        return await rtcEngine.setupLocalView(0, deviceId, dom);
+        const dID = sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1;
+        return rtcEngine.setupLocalViewAndPreview(0, dID, dom, sourceType);
       }
       return -999;
     },
@@ -91,39 +99,43 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
   const setupScreenLocalView = useCallback(
     async (dom: HTMLDivElement, layerConfig: LayerConfig) => {
       if (rtcEngine && dom) {
+        const { width, height, x, y, sourceType, zOrder, displayId, isCaptureWindow, windowId, frameRate, bitrate } =
+          layerConfig;
         setSize((pre) => {
-          // 这里的计算是为了让画布中图层和源的高宽比保持一致
-          return computeEquidistantSize({ width: layerConfig.width, height: layerConfig.height }, { max: pre.width });
+          // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
+          return computeEquidistantSize({ width, height }, { max: pre.width });
         });
+
         const screenCaptureConfig: ScreenCaptureConfiguration = {
-          isCaptureWindow: layerConfig.isCaptureWindow,
-          displayId: layerConfig.displayId,
-          windowId: layerConfig.windowId,
+          isCaptureWindow: isCaptureWindow,
+          displayId: displayId,
+          windowId: windowId,
           params: {
-            width: layerConfig.width,
-            height: layerConfig.height,
-            frameRate: layerConfig.frameRate,
-            bitrate: layerConfig.bitrate,
+            width: width,
+            height: height,
+            frameRate: frameRate,
+            bitrate: bitrate,
           },
           screenRect: ScreenCaptureFullScreenRect,
           regionRect: ScreenCaptureFullScreenRect,
         };
 
-        const code = rtcEngine.startScreenCapture(layerConfig.sourceType, screenCaptureConfig);
+        let code;
+        code = rtcEngine.startScreenCapture(sourceType, screenCaptureConfig);
         if (code !== 0) {
           return code;
         }
         const videoInputConfig = rtcEngine.localTranscoder.createVideoInputStreamConfig({
-          sourceType: layerConfig.sourceType,
-          x: layerConfig.x,
-          y: layerConfig.y,
-          width: layerConfig.width,
-          height: layerConfig.height,
-          zOrder: layerConfig.zOrder,
+          sourceType,
+          x,
+          y,
+          width,
+          height,
+          zOrder,
         });
         rtcEngine.localTranscoder.addVideoInputStream(videoInputConfig);
-        const deviceId = layerConfig.sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY ? 0 : 1;
-        return await rtcEngine.setupLocalView(3, deviceId, dom);
+        const dID = sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY ? 0 : 1;
+        return rtcEngine.setupLocalViewAndPreview(3, dID, dom, sourceType);
       }
       return -999;
     },
@@ -171,6 +183,7 @@ export const getLayerConfigFromDisplayInfo = (
   options?: Partial<LayerConfig>
 ): LayerConfig => {
   return {
+    type: LayerType.SCREEN,
     sourceType,
     x: data.displayId.x,
     y: data.displayId.y,
@@ -192,6 +205,7 @@ export const getLayerConfigFromWindowInfo = (
   options?: Partial<LayerConfig>
 ): LayerConfig => {
   return {
+    type: LayerType.SCREEN,
     sourceType,
     isCaptureWindow: true,
     x: data.x,
@@ -214,6 +228,7 @@ export const getLayerConfigFromMediaDeviceInfo = (
   options?: Partial<LayerConfig>
 ): LayerConfig => {
   return {
+    type: LayerType.CAMERA,
     deviceId: data.deviceId,
     x: 0,
     y: 0,

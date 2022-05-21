@@ -15,15 +15,14 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const navigator = useNavigate();
 
   useEffect(() => {
-    const cameraStream = findVideoStreamFromProfile(profile);
+    const stream = findVideoStreamFromProfile(profile);
     const channel = session?.channel;
-    if (!cameraStream || !session || !channel || rtcEngine) {
+    if (!stream || !session || !channel || rtcEngine) {
       return;
     }
-    const { appId, token, uid } = cameraStream;
+    const { appId } = stream;
     const engine = RtcEngine.singleton(appId);
-    engine.joinChannelInit();
-    engine.storeInfo(token, channel, uid);
+    engine.init();
     setRtcEngine(engine);
   }, [profile, session, rtcEngine]);
 

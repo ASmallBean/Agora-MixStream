@@ -120,9 +120,9 @@ const HostMenu = () => {
             let code;
             if (audio) {
               // 停止音频
-              code = rtcEngine.stopAudio();
+              code = rtcEngine.disableAudio();
             } else {
-              code = rtcEngine.startAudio();
+              code = rtcEngine.enableAudio();
             }
             if (code === 0) {
               setAudio((pre) => !pre);
@@ -152,7 +152,7 @@ const HostMenu = () => {
                 return;
               }
               const { token, uid } = stream;
-              code = rtcEngine.joinChannel(token, channel, uid);
+              code = rtcEngine.joinChannelWithPublishTrancodedVideoTrack(token, channel, uid);
             }
             if (code === 0) {
               setPlay((pre) => !pre);

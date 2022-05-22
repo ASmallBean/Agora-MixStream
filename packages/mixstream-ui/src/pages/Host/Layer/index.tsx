@@ -2,8 +2,13 @@ import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_
 import { FC, useCallback, useId, useMemo, useRef, useState } from 'react';
 import { Item, ItemProps, Menu, Separator, Submenu, useContextMenu } from 'react-contexify';
 import { useMount, useWindowSize } from 'react-use';
-import { RtcEngine, ScreenCaptureFullScreenRect } from '../../../services/RtcEngine';
-import { DisplayInfo, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../services/type';
+import {
+  DisplayInfo,
+  RtcEngineControl,
+  ScreenCaptureFullScreenRect,
+  VIDEO_SOURCE_TYPE,
+  WindowInfo,
+} from '../../../engines';
 import './index.css';
 
 export enum LayerType {
@@ -30,7 +35,7 @@ export interface LayerConfig {
 interface LayerProps {
   className?: string;
   data: LayerConfig;
-  rtcEngine?: RtcEngine;
+  rtcEngine?: RtcEngineControl;
 }
 
 // 画布固定宽高比 16:9，高:80vw 宽45vw

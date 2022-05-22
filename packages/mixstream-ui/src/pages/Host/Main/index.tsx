@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
+import { DisplayInfo, ShareScreenType, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../engines';
 import { useEngine } from '../../../hooks/engines';
 import { useShareCamera } from '../../../hooks/shareCamera/useShareCamera';
 import { useShareScreen } from '../../../hooks/shareScreen/useShareScreen';
 import { useStream } from '../../../hooks/stream';
-import { DisplayInfo, ShareScreenType, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../services/type';
 import { ChannelEnum } from '../../../utils/channel';
 import { WhiteboardTitle } from '../../Whiteboard';
 import Layer, {
@@ -23,6 +23,9 @@ const HostMain = () => {
   console.log('🚀 ~ file: index.tsx ~ line 22 ~ HostMain ~ streams', streams);
 
   useEffect(() => {
+    if (!rtcEngine) {
+      return;
+    }
     const handle = async (event: MenuEventEnum) => {
       switch (event) {
         case MenuEventEnum.CreateCameraLayer:
@@ -34,7 +37,7 @@ const HostMain = () => {
           }
           break;
         case MenuEventEnum.CreateScreenLayer:
-          if (openShareScreenModal && rtcEngine) {
+          if (openShareScreenModal) {
             openShareScreenModal(async (type, data) => {
               switch (type) {
                 case ShareScreenType.Display:
@@ -52,23 +55,21 @@ const HostMain = () => {
           }
           break;
         case MenuEventEnum.CreateWhiteboardLayer:
-          if (rtcEngine) {
-            const windowInfoList = await rtcEngine.getScreenWindowsInfo();
-            if (windowInfoList && windowInfoList.length) {
-              const w = windowInfoList.find((v) => {
-                return v.name === WhiteboardTitle;
-              });
-              if (w) {
-                addStream(getLayerConfigFromWindowInfo(w, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY));
-              }
+          const windowInfoList = await rtcEngine.getScreenWindowsInfo();
+          if (windowInfoList && windowInfoList.length) {
+            const w = windowInfoList.find((v) => {
+              return v.name === WhiteboardTitle;
+            });
+            if (w) {
+              addStream(getLayerConfigFromWindowInfo(w, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY));
             }
           }
           break;
       }
     };
-    rtcEngine?.on(ChannelEnum.MenuControl, handle);
+    rtcEngine.on(ChannelEnum.MenuControl, handle);
     return () => {
-      rtcEngine?.removeListener(ChannelEnum.MenuControl, handle);
+      rtcEngine.removeListener(ChannelEnum.MenuControl, handle);
     };
   }, [addStream, openShareCameraModal, openShareScreenModal, rtcEngine]);
 

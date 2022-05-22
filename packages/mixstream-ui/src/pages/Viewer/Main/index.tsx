@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { RtcEngineEvents } from '../../../engines';
 import { useEngine } from '../../../hooks/engines';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
-import { RtcEngineEvents } from '../../../services/RtcEngine';
 import './index.css';
 
 const ViewerMain = () => {

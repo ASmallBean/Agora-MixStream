@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren, useCallback, useMemo, useState } from 'react';
+import { VIDEO_SOURCE_TYPE } from '../../engines';
 import { LayerConfig } from '../../pages/Host/Layer';
-import { VIDEO_SOURCE_TYPE } from '../../services/type';
 import { StreamContext } from './context';
 
 export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {

@@ -24,7 +24,6 @@ export class LocalTranscoder {
   private _localTranscoderConfig = defaultLocal;
 
   getConfig() {
-    console.log('🚀 ~ file: _localTranscoderConfig ~ config', this._localTranscoderConfig);
     return this._localTranscoderConfig;
   }
 

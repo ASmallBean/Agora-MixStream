@@ -19,9 +19,6 @@ const HostMain = () => {
   const { openModal: openShareCameraModal } = useShareCamera();
   const { openModal: openShareScreenModal } = useShareScreen();
   const { streams, addStream, removeStream } = useStream();
-
-  console.log('🚀 ~ file: index.tsx ~ line 22 ~ HostMain ~ streams', streams);
-
   useEffect(() => {
     if (!rtcEngine) {
       return;

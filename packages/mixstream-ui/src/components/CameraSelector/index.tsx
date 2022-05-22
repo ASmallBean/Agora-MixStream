@@ -65,7 +65,6 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
     navigator.mediaDevices.enumerateDevices().then((deviceInfo) => {
       const data = deviceInfo.filter((v) => v.kind === 'videoinput');
       setDevices(data);
-      console.log('🚀 ~ file: index.tsx ~ line 66 ~ navigator.mediaDevices.enumerateDevices ~ data', data);
       if (data && data.length) {
         form.setFieldsValue({ deviceId: data[0].deviceId, resolution: resolutionOptions[0].value });
         handleChange();

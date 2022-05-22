@@ -1,13 +1,12 @@
 import 'antd/dist/antd.min.css';
-import CustomTitleBar from './components/CustomTitleBar';
+import { GlobalProvider } from './hooks/global/provider';
 import RouteMap from './routes';
 
 function App() {
   return (
-    <div>
-      <CustomTitleBar title={'Demo v0.0.1'} />
+    <GlobalProvider>
       <RouteMap />
-    </div>
+    </GlobalProvider>
   );
 }
 

@@ -41,6 +41,7 @@ const HostMenu = () => {
     setWhiteboard,
     shareCamera,
     shareScreen,
+    shareWhiteboard,
   } = useStream();
   const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
 
@@ -66,7 +67,7 @@ const HostMenu = () => {
         {
           label: intl.formatMessage({ id: 'host.menu.layer.whiteboard' }),
           key: 'whiteboard',
-          disabled: !whiteboard,
+          disabled: !whiteboard || !shareWhiteboard,
           onClick: () => {
             rtcEngine?.emit(ChannelEnum.MenuControl, MenuEventEnum.CreateWhiteboardLayer);
           },

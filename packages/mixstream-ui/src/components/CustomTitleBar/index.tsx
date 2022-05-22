@@ -1,6 +1,6 @@
 import { remote } from 'electron';
 import TitleBar from 'frameless-titlebar';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useMemo, useState } from 'react';
 import './index.css';
 import { titleBarTheme } from './theme';
 
@@ -9,10 +9,15 @@ const platform = remote.process.platform;
 
 interface CustomTitleBarProps {
   title?: string;
+  visible?: boolean;
 }
 
-const CustomTitleBar: FC<CustomTitleBarProps> = ({ title }) => {
+const CustomTitleBar: FC<CustomTitleBarProps> = ({ title, visible = true }) => {
   const [maximized, setMaximized] = useState(currentWindow.isMaximized());
+
+  const them = useMemo(() => {
+    return titleBarTheme(visible);
+  }, [visible]);
 
   useEffect(() => {
     const onMaximized = () => setMaximized(true);
@@ -46,7 +51,7 @@ const CustomTitleBar: FC<CustomTitleBarProps> = ({ title }) => {
         disableMaximize={false}
         maximized={maximized}
         title={title}
-        theme={titleBarTheme}
+        theme={them}
         menu={[
           {
             id: 'new',

@@ -11,7 +11,13 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const [whiteboard, setWhiteboard] = useState(false);
 
   const shareScreen = useMemo(() => {
-    return streams.filter((v) => v.sourceType >= 2).length < 2;
+    // 屏幕占用 sourceType = 2 的频道流
+    return !streams.some((v) => v.sourceType === 2);
+  }, [streams]);
+
+  const shareWhiteboard = useMemo(() => {
+    // 屏幕占用 sourceType = 3 的频道流
+    return !streams.some((v) => v.sourceType === 3);
   }, [streams]);
 
   const shareCamera = useMemo(() => {
@@ -98,6 +104,7 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
         updateStreams,
         shareCamera,
         shareScreen,
+        shareWhiteboard,
       }}
     >
       {children}

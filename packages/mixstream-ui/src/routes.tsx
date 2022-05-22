@@ -2,6 +2,7 @@ import 'antd/dist/antd.min.css';
 import { FC, PropsWithChildren } from 'react';
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import CustomTitleBar from './components/CustomTitleBar';
+import { useGlobal } from './hooks/global/useGlobal';
 import Host from './pages/Host';
 import Landing from './pages/Landing';
 import Viewer from './pages/Viewer';
@@ -12,9 +13,10 @@ export const BlankLayout: FC<PropsWithChildren<{}>> = ({ children }) => {
 };
 
 function RouteMap() {
+  const { titleBar } = useGlobal();
   return (
     <div>
-      <CustomTitleBar title={'Demo v0.0.1'} />
+      <CustomTitleBar {...titleBar} />
       <HashRouter>
         <Routes>
           <Route path="/" element={<Landing />} />

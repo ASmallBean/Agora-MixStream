@@ -1,5 +1,5 @@
 import { createContext, Dispatch, SetStateAction } from 'react';
-import { TitleBar } from './provider';
+import { defaultTitleBar, TitleBar } from './provider';
 
 interface ContextTypes {
   loading: boolean;
@@ -11,6 +11,6 @@ interface ContextTypes {
 export const GlobalContext = createContext<ContextTypes>({
   loading: false,
   setLoading: () => {},
-  titleBar: { title: '', visible: true },
+  titleBar: defaultTitleBar,
   setTitleBar: () => {},
 });

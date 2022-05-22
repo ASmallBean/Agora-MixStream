@@ -2,8 +2,6 @@ import { createContext, Dispatch, SetStateAction } from 'react';
 import { LayerConfig } from '../../pages/Host/Layer';
 
 export interface StreamContextProps {
-  shareCamera: boolean;
-  shareScreen: boolean;
   audio: boolean;
   setAudio: Dispatch<SetStateAction<boolean>>;
   play: boolean;
@@ -17,11 +15,12 @@ export interface StreamContextProps {
   addStream: (data: LayerConfig) => void;
   removeStream: (data: LayerConfig['sourceType']) => void;
   updateStreams: (type: LayerConfig['sourceType'], data: LayerConfig) => void;
+  shareCamera: boolean;
+  shareScreen: boolean;
+  shareWhiteboard: boolean;
 }
 
 export const StreamContext = createContext<StreamContextProps>({
-  shareScreen: false,
-  shareCamera: false,
   play: false,
   setPlay: () => {},
   audio: false,
@@ -34,4 +33,7 @@ export const StreamContext = createContext<StreamContextProps>({
   addStream: () => {},
   removeStream: () => {},
   updateStreams: () => {},
+  shareWhiteboard: false,
+  shareScreen: false,
+  shareCamera: false,
 });

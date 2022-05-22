@@ -7,7 +7,7 @@ import {
   RtcEngineControl,
   ScreenCaptureFullScreenRect,
   VIDEO_SOURCE_TYPE,
-  WindowInfo
+  WindowInfo,
 } from '../../../engine';
 import './index.css';
 
@@ -53,7 +53,13 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     };
   }, [windowWidth]);
 
-  const [layout, setLayout] = useState({ width: canvasSize.width, height: canvasSize.height, left: 0, top: 0 });
+  const [layout, setLayout] = useState({
+    width: canvasSize.width,
+    height: canvasSize.height,
+    left: 0,
+    top: 0,
+    zIndex: 100,
+  });
 
   const { show } = useContextMenu({
     id: uid,
@@ -86,6 +92,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 ),
                 left: 0,
                 top: 0,
+                zIndex: 101,
               };
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 右边
               return {
@@ -95,6 +102,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 ),
                 left: 0,
                 top: canvasSize.width * 0.8,
+                zIndex: 101,
               };
             default:
               return {
@@ -106,7 +114,6 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
               };
           }
         });
-
         let code;
         code = rtcEngine.startCameraCapture(sourceType, deviceId, {
           width,
@@ -151,6 +158,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 ),
                 left: 0,
                 top: 0,
+                zIndex: 98,
               };
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 白板
               return {
@@ -160,6 +168,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 ),
                 left: 0,
                 top: canvasSize.height * 0.5,
+                zIndex: 99,
               };
             default:
               return {
@@ -205,7 +214,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
       }
       return -999;
     },
-    [rtcEngine]
+    [canvasSize.height, canvasSize.width, rtcEngine]
   );
 
   useMount(() => {

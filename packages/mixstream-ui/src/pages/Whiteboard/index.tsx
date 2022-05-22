@@ -1,16 +1,13 @@
-import { notification } from 'antd';
-import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { createFastboard, Fastboard, FastboardApp } from '@netless/fastboard-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGlobal } from '../../hooks/global/useGlobal';
-import { ProfileProvider } from '../../hooks/profile';
-import { SessionProvider } from '../../hooks/session';
-import WhiteboardMain from './main';
-
+import { useProfile } from '../../hooks/profile';
 export const WhiteboardTitle = 'MixStream-Whiteboard';
 
-const Whiteboard = () => {
-  const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
-  const navigator = useNavigate();
+const WhiteboardMain = () => {
+  const [app, setApp] = useState<FastboardApp>();
+  const appInstance = useRef<FastboardApp>();
+  const { profile } = useProfile();
   const { setTitleBar } = useGlobal();
 
   useEffect(() => {
@@ -23,22 +20,39 @@ const Whiteboard = () => {
     });
   }, [setTitleBar]);
 
-  if (!sessionId || !profileId) {
-    notification.error({
-      message: '参数错误',
-      description: 'sessionId 或者 profileId 不正确',
-    });
-    navigator('/');
-    return null;
-  }
+  useEffect(() => {
+    if (profile && !appInstance.current) {
+      createFastboard({
+        sdkConfig: {
+          appIdentifier: profile.whiteboard.appIdentifier,
+          region: 'cn-hz',
+        },
+        joinRoom: {
+          uid: profile.id,
+          uuid: profile.whiteboard.uuid,
+          roomToken: profile.whiteboard.token,
+        },
+        managerConfig: {
+          cursor: true,
+        },
+      }).then((app) => {
+        appInstance.current = app;
+        setApp(app);
+      });
+    }
+
+    return () => {
+      if (appInstance.current) {
+        appInstance.current.destroy();
+      }
+    };
+  }, [profile]);
 
   return (
-    <ProfileProvider sessionId={sessionId} profileId={profileId}>
-      <SessionProvider sessionId={sessionId}>
-        <WhiteboardMain />
-      </SessionProvider>
-    </ProfileProvider>
+    <div style={{ width: '100vw', height: '100vh' }}>
+      <Fastboard app={app} />
+    </div>
   );
 };
 
-export default Whiteboard;
+export default WhiteboardMain;

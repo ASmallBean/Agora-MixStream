@@ -1,5 +1,7 @@
 import { createContext, Dispatch, SetStateAction } from 'react';
-import { defaultTitleBar, TitleBar } from './provider';
+import { TitleBar } from './provider';
+
+export const defaultTitleBar = { title: 'Demo v0.0.1', visible: true };
 
 interface ContextTypes {
   loading: boolean;

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { RtcEngineEvents } from '../../../engines';
+import { RtcEngineEvents } from '../../../engine';
 import { useEngine } from '../../../hooks/engines';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';

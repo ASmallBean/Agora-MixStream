@@ -8,7 +8,7 @@ import {
   ScreenCaptureFullScreenRect,
   VIDEO_SOURCE_TYPE,
   WindowInfo,
-} from '../../../engines';
+} from '../../../engine';
 import './index.css';
 
 export enum LayerType {

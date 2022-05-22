@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnmount } from 'react-use';
-import { RtcEngineControl } from '../../engines';
+import { RtcEngineControl } from '../../engine';
 import { findVideoStreamFromProfile } from '../../services/api';
 import { ChannelEnum } from '../../utils/channel';
 import { useProfile } from '../profile';

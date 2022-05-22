@@ -2,7 +2,7 @@ import { Modal } from 'antd';
 import cls from 'classnames';
 import { FC, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { DisplayInfo, ShareScreenType, WindowInfo } from '../../engines/type';
+import { DisplayInfo, ShareScreenType, WindowInfo } from '../../engine';
 import './index.css';
 
 export interface ScreenSelectorHandler {

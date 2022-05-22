@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren, useRef, useState } from 'react';
 import { ScreenSelector, ScreenSelectorHandler } from '../../components/ScreenSelector';
-import { DisplayInfo, WindowInfo } from '../../engines/type';
+import { DisplayInfo, WindowInfo } from '../../engine';
 import { useEngine } from '../engines';
 import { ShareScreenContext } from './context';
 

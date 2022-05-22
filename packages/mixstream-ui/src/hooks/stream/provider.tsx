@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, useCallback, useMemo, useState } from 'react';
-import { VIDEO_SOURCE_TYPE } from '../../engines';
+import { VIDEO_SOURCE_TYPE } from '../../engine';
 import { LayerConfig } from '../../pages/Host/Layer';
 import { StreamContext } from './context';
 

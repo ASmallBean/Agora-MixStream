@@ -6,14 +6,12 @@ import EventEmitter from 'eventemitter3';
 import { isMacOS } from '../utils';
 import { LocalTranscoder } from './LocalTranscoder';
 import { DisplayInfo, VIDEO_SOURCE_TYPE, WindowInfo } from './type';
-
 const LOGS_FOLDER = isMacOS() ? `${window.process.env.HOME}/Library/Logs/MixStreamClient` : './log';
 
 export enum RtcEngineEvents {
-  PUBLISHED = 'published',
-  UNPUBLISHED = 'unpublished',
   ADDSTREAM = 'addStream',
   NETWORK_QUALITY_CHANGE = 'networkQualityChange',
+  VIDEO_DEVICE_STATE_CHANGED = 'videoDeviceStateChanged',
 }
 
 export class RtcEngine extends EventEmitter {
@@ -38,6 +36,9 @@ export class RtcEngine extends EventEmitter {
     });
     this._rtcEngine.on('networkQuality', (_uid, up, down) => {
       this.emit(RtcEngineEvents.NETWORK_QUALITY_CHANGE, { up, down });
+    });
+    this._rtcEngine.on('videoDeviceStateChanged', (deviceId, deviceType, deviceState) => {
+      this.emit(RtcEngineEvents.VIDEO_DEVICE_STATE_CHANGED, { deviceId, deviceType, deviceState });
     });
   }
 
@@ -167,6 +168,15 @@ export class RtcEngine extends EventEmitter {
     const code = this._rtcEngine.startPreview(sourceType);
     if (code !== 0) {
       throw new Error(`Failed to startPreview with error code: ${code}`);
+    }
+    return code;
+  }
+
+  stopPreview(sourceType: VIDEO_SOURCE_TYPE) {
+    console.log('🚀 ~ stopPreview sourceType:', sourceType);
+    const code = this._rtcEngine.stopPreview(sourceType);
+    if (code !== 0) {
+      throw new Error(`Failed to stopPreview with error code: ${code}`);
     }
     return code;
   }

@@ -51,7 +51,7 @@ export class RtcEngineControl extends RtcEngine {
   joinChannelWithPublishTrancodedVideoTrack(token: string, channel: string, uid: number) {
     const code = this.joinChannel(token, channel, uid);
     if (code !== 0) {
-      return;
+      return code;
     }
     const data: any = {
       publishCameraTrack: false,

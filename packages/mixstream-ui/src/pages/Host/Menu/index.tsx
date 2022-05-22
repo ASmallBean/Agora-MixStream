@@ -1,5 +1,7 @@
 import { Button, Dropdown, Menu, Select } from 'antd';
 import _ from 'lodash';
+import { AiOutlineAudio, AiOutlineAudioMuted, AiOutlinePauseCircle, AiOutlinePlayCircle } from 'react-icons/ai';
+import { BsBoxArrowLeft } from 'react-icons/bs';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 import { VIDEO_SOURCE_TYPE } from '../../../engine';
@@ -12,7 +14,6 @@ import { hostPath } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
 import './index.css';
-
 const bitrates: { [key: string]: number } = {
   '1280x720': 1000,
   '1920x1080': 2000,
@@ -118,7 +119,9 @@ const HostMenu = () => {
         })}
       </Select>
       <Button
-        disabled={audio}
+        title={intl.formatMessage({
+          id: audio ? 'host.menu.audio.off' : 'host.menu.audio.on',
+        })}
         onClick={_.throttle(async () => {
           if (rtcEngine) {
             let code;
@@ -134,12 +137,12 @@ const HostMenu = () => {
           }
         }, 200)}
       >
-        {intl.formatMessage({
-          id: audio ? 'host.menu.audio.on' : 'host.menu.audio.off',
-        })}
+        {audio ? <AiOutlineAudioMuted size={20} /> : <AiOutlineAudio size={20} />}
       </Button>
       <Button
-        disabled={play}
+        title={intl.formatMessage({
+          id: !play ? 'host.menu.play.off' : 'host.menu.play.on',
+        })}
         onClick={_.throttle(async () => {
           if (rtcEngine) {
             let code;
@@ -164,18 +167,17 @@ const HostMenu = () => {
           }
         }, 200)}
       >
-        {intl.formatMessage({
-          id: !play ? 'host.menu.play.on' : 'host.menu.play.off',
-        })}
+        {play ? <AiOutlinePauseCircle size={22} /> : <AiOutlinePlayCircle size={22} />}
       </Button>
       <Button
+        title={intl.formatMessage({
+          id: 'host.menu.quit.channel',
+        })}
         onClick={() => {
           rtcEngine?.emit(ChannelEnum.QuitChannel);
         }}
       >
-        {intl.formatMessage({
-          id: 'host.menu.quit.channel',
-        })}
+        <BsBoxArrowLeft size={21} />
       </Button>
     </div>
   );

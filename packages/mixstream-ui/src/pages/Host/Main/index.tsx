@@ -18,7 +18,7 @@ const HostMain = () => {
   const { rtcEngine } = useEngine();
   const { openModal: openShareCameraModal } = useShareCamera();
   const { openModal: openShareScreenModal } = useShareScreen();
-  const { streams, addStream } = useStream();
+  const { streams, addStream, removeStream } = useStream();
 
   console.log('🚀 ~ file: index.tsx ~ line 22 ~ HostMain ~ streams', streams);
 
@@ -77,7 +77,7 @@ const HostMain = () => {
     <div className="hostMain">
       {streams.map((v, i) => {
         const key = `${v.deviceId}${v.windowId}${v.sourceType}${v.displayId}${i}`;
-        return <Layer key={key} data={v} rtcEngine={rtcEngine}></Layer>;
+        return <Layer key={key} data={v} rtcEngine={rtcEngine} remove={removeStream}></Layer>;
       })}
     </div>
   );

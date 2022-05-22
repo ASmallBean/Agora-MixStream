@@ -1,13 +1,13 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
 import { FC, useCallback, useId, useMemo, useRef, useState } from 'react';
-import { Item, ItemProps, Menu, Separator, Submenu, useContextMenu } from 'react-contexify';
+import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
 import { useMount, useWindowSize } from 'react-use';
 import {
   DisplayInfo,
   RtcEngineControl,
   ScreenCaptureFullScreenRect,
   VIDEO_SOURCE_TYPE,
-  WindowInfo,
+  WindowInfo
 } from '../../../engine';
 import './index.css';
 
@@ -36,20 +36,24 @@ interface LayerProps {
   className?: string;
   data: LayerConfig;
   rtcEngine?: RtcEngineControl;
+  remove: (config: LayerConfig['sourceType']) => void;
 }
 
 // 画布固定宽高比 16:9，高:80vw 宽45vw
 
-const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
+const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   const uid = useId();
-  const [config, setConfig] = useState(data);
-  const { width: windowWidth } = useWindowSize();
   const domRef = useRef<HTMLDivElement>(null);
-  const initMaxSize = useMemo(() => {
-    return Math.floor(windowWidth * 0.4 + 1);
+  const { width: windowWidth } = useWindowSize();
+  const [config, setConfig] = useState(data);
+  const canvasSize = useMemo(() => {
+    return {
+      width: windowWidth * 0.8, // 80vw
+      height: windowWidth * 0.45, // 45vw
+    };
   }, [windowWidth]);
 
-  const [size, setSize] = useState({ width: initMaxSize, height: initMaxSize });
+  const [layout, setLayout] = useState({ width: canvasSize.width, height: canvasSize.height, left: 0, top: 0 });
 
   const { show } = useContextMenu({
     id: uid,
@@ -57,7 +61,6 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
 
   const handleContextMenu = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     event.preventDefault();
-    console.log('🚀 ~ file: main.tsx ~ line 213 ~ handleContextMenu ~ event', event);
     show(event, {
       props: {
         key: 'value',
@@ -70,9 +73,38 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
     async (dom: HTMLDivElement, layerConfig: LayerConfig) => {
       if (rtcEngine && dom) {
         const { width, height, x, y, sourceType, zOrder, deviceId } = layerConfig;
-        setSize((pre) => {
+        setLayout((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
-          return computeEquidistantSize({ width, height }, { max: pre.width });
+          switch (
+            sourceType // 这个版本通过 VIDEO_SOURCE_TYPE 判断是第一个摄像头还是第二个
+          ) {
+            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY: // 左边
+              return {
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width, maxHeight: canvasSize.height }
+                ),
+                left: 0,
+                top: 0,
+              };
+            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 右边
+              return {
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.2, maxHeight: canvasSize.height * 0.2 }
+                ),
+                left: 0,
+                top: canvasSize.width * 0.8,
+              };
+            default:
+              return {
+                ...pre,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
+                ),
+              };
+          }
         });
 
         let code;
@@ -97,7 +129,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
       }
       return -999;
     },
-    [rtcEngine]
+    [canvasSize.height, canvasSize.width, rtcEngine]
   );
 
   // 渲染共享屏幕
@@ -106,9 +138,38 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
       if (rtcEngine && dom) {
         const { width, height, x, y, sourceType, zOrder, displayId, isCaptureWindow, windowId, frameRate, bitrate } =
           layerConfig;
-        setSize((pre) => {
+        setLayout((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
-          return computeEquidistantSize({ width, height }, { max: pre.width });
+          switch (
+            sourceType // 这个版本通过 VIDEO_SOURCE_TYPE判断是白板还是窗口
+          ) {
+            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY: // 窗口 满屏
+              return {
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width, maxHeight: canvasSize.height }
+                ),
+                left: 0,
+                top: 0,
+              };
+            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 白板
+              return {
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
+                ),
+                left: 0,
+                top: canvasSize.height * 0.5,
+              };
+            default:
+              return {
+                ...pre,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
+                ),
+              };
+          }
         });
 
         const screenCaptureConfig: ScreenCaptureConfiguration = {
@@ -158,24 +219,24 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data }) => {
     }
   });
 
-  const handleItemClick: ItemProps['onClick'] = ({ event, props }) => console.log(event, props);
+  const handleItemRemove = useCallback(
+    (item: ItemParams) => {
+      const { event, props } = item;
+      console.log(event, props);
+      event.preventDefault();
+      remove(data.sourceType);
+    },
+    [data.sourceType, remove]
+  );
   return (
     <div
       className={`layer container ${className ? className : ''}`}
-      style={size}
+      style={layout}
       onContextMenu={handleContextMenu}
       ref={domRef}
     >
       <Menu id={uid}>
-        <Item onClick={handleItemClick}>Item 1</Item>
-        <Item onClick={handleItemClick}>Item 2</Item>
-        <Separator />
-        <Item disabled>Disabled</Item>
-        <Separator />
-        <Submenu label="Foobar">
-          <Item onClick={handleItemClick}>Sub Item 1</Item>
-          <Item onClick={handleItemClick}>Sub Item 2</Item>
-        </Submenu>
+        <Item onClick={handleItemRemove}>删除</Item>
       </Menu>
     </div>
   );
@@ -187,16 +248,14 @@ export const getLayerConfigFromDisplayInfo = (
   sourceType: VIDEO_SOURCE_TYPE,
   options?: Partial<LayerConfig>
 ): LayerConfig => {
+  const { id, ...rest } = data.displayId;
   return {
     type: LayerType.SCREEN,
+    displayId: id,
     sourceType,
-    x: data.displayId.x,
-    y: data.displayId.y,
-    width: data.displayId.height,
-    height: data.displayId.width,
+    ...rest,
     isCaptureWindow: false,
     windowId: 0,
-    displayId: data.displayId.id,
     deviceId: '',
     frameRate: 5,
     bitrate: 0,
@@ -250,17 +309,24 @@ export const getLayerConfigFromMediaDeviceInfo = (
   };
 };
 
-function computeEquidistantSize(data: { width: number; height: number }, options: { max: number }) {
+// 在不超过设定高宽最大值的提前下，等比缩放高宽
+function computeEquidistantSize(
+  data: { width: number; height: number },
+  options: { maxWidth: number; maxHeight: number }
+) {
   const { width, height } = data;
-  const { max } = options;
-  if (width > height) {
-    return {
-      width: max,
-      height: (height * max) / width,
-    };
+  const { maxWidth, maxHeight } = options;
+  const ratio = width / height;
+  const maxRatio = maxWidth / maxHeight;
+
+  const result = { width: maxWidth, height: maxHeight };
+  if (ratio < maxRatio) {
+    result.width = maxHeight * ratio;
+    result.height = maxHeight;
   }
-  return {
-    width: (width * max) / height,
-    height: max,
-  };
+  if (ratio > maxRatio) {
+    result.width = maxWidth;
+    result.height = maxWidth / ratio;
+  }
+  return result;
 }

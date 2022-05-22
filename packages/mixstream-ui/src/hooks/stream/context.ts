@@ -13,8 +13,8 @@ export interface StreamContextProps {
 
   updateResolution: (data: number) => void;
   addStream: (data: LayerConfig) => void;
-  removeStream: (data: LayerConfig['sourceType']) => void;
-  updateStreams: (type: LayerConfig['sourceType'], data: LayerConfig) => void;
+  removeStream: (sourceType: LayerConfig['sourceType']) => void;
+  updateStreams: (sourceType: LayerConfig['sourceType'], data: LayerConfig) => void;
   shareCamera: boolean;
   shareScreen: boolean;
   shareWhiteboard: boolean;

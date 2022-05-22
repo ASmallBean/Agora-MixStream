@@ -1,7 +1,7 @@
 import { BrowserWindow, remote } from 'electron';
 
 const WIDTH = 1200;
-const HEIGHT = 750;
+const HEIGHT = 675;
 const ASPECT_RATIO = 1.78;
 
 class WhiteboardBrowserWindow {

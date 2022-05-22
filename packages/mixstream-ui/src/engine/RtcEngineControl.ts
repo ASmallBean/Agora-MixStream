@@ -10,6 +10,25 @@ export const ScreenCaptureFullScreenRect = {
   y: 0,
 };
 
+export interface Resolution {
+  width: number;
+  height: number;
+}
+export const resolutionMap: { [key: string]: Resolution } = {
+  '1920 x 1080': {
+    width: 1920,
+    height: 1080,
+  },
+  '1280 x 720': {
+    width: 1280,
+    height: 720,
+  },
+  '640 x 360': {
+    width: 640,
+    height: 360,
+  },
+};
+
 export const DEFAULT_RECT = { x: 0, y: 0, height: 0, width: 0 };
 
 export class RtcEngineControl extends RtcEngine {

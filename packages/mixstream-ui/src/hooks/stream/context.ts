@@ -1,4 +1,5 @@
 import { createContext, Dispatch, SetStateAction } from 'react';
+import { VIDEO_SOURCE_TYPE } from '../../engine';
 import { LayerConfig } from '../../pages/Host/Layer';
 
 export interface StreamContextProps {
@@ -18,6 +19,8 @@ export interface StreamContextProps {
   shareCamera: boolean;
   shareScreen: boolean;
   shareWhiteboard: boolean;
+  freeCameraCaptureSource: VIDEO_SOURCE_TYPE | null;
+  freeScreenCaptureSource: VIDEO_SOURCE_TYPE | null;
 }
 
 export const StreamContext = createContext<StreamContextProps>({
@@ -36,4 +39,6 @@ export const StreamContext = createContext<StreamContextProps>({
   shareWhiteboard: false,
   shareScreen: false,
   shareCamera: false,
+  freeCameraCaptureSource: null,
+  freeScreenCaptureSource: null,
 });

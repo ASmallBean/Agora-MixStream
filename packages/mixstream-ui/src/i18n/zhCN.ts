@@ -17,6 +17,8 @@ const message = {
   'modal.screen.selector.tab.display': '桌面',
   'modal.screen.selector.tab.window': '窗口',
   'modal.camera.selector.title': '请选择你想要打开的摄像头',
+  'modal.camera.selector.resolution': '分辨率',
+  'modal.camera.selector.device': '设备',
   'modal.camera.selector.ok': '确认',
   'message.permissions.screen': '没有屏幕录制权限',
   'host.menu.layer.new': '新增图层',

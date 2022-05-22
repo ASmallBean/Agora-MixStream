@@ -2,7 +2,7 @@ import { createContext } from 'react';
 import { ScreenSelectorHandler } from '../../components/ScreenSelector';
 
 interface ContextTypes {
-  openModal: (cb: ScreenSelectorHandler) => void;
+  openModal: (cb: ScreenSelectorHandler) => Promise<void>;
   closeModal: () => void;
 }
 

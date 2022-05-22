@@ -1,12 +1,12 @@
 import { FC, PropsWithChildren, useRef, useState } from 'react';
 import CameraSelector from '../../components/CameraSelector';
-import { ShareCameraContext, SuccessCallback } from './context';
+import { ShareCameraCallback, ShareCameraContext } from './context';
 
 export const ShareCameraProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const [visible, setVisible] = useState<boolean>(false);
-  const cbRef = useRef<SuccessCallback>(() => {});
+  const cbRef = useRef<ShareCameraCallback>(() => {});
 
-  const openModal = (cb: SuccessCallback) => {
+  const openModal = (cb: ShareCameraCallback) => {
     setVisible(true);
     cbRef.current = cb;
   };
@@ -21,9 +21,9 @@ export const ShareCameraProvider: FC<PropsWithChildren<{}>> = ({ children }) => 
       <CameraSelector
         visible={visible}
         onCancel={closeModal}
-        onOk={(data) => {
+        onOk={(data, resolution) => {
           closeModal();
-          cbRef.current && cbRef.current(data);
+          cbRef.current && cbRef.current(data, resolution);
         }}
       />
     </ShareCameraContext.Provider>

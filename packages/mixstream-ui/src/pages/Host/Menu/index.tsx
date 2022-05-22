@@ -2,7 +2,8 @@ import { Button, Dropdown, Menu, Select } from 'antd';
 import _ from 'lodash';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
-import { useEngine } from '../../../hooks/engines';
+import { VIDEO_SOURCE_TYPE } from '../../../engine';
+import { useEngine } from '../../../hooks/engine';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
@@ -42,6 +43,7 @@ const HostMenu = () => {
     shareCamera,
     shareScreen,
     shareWhiteboard,
+    removeStream,
   } = useStream();
   const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
 
@@ -90,6 +92,7 @@ const HostMenu = () => {
             w.open(hostPath() + pathname).then((browserWindow) => {
               browserWindow.on('closed', () => {
                 setWhiteboard(false);
+                removeStream(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY);
               });
               setWhiteboard(true);
             });

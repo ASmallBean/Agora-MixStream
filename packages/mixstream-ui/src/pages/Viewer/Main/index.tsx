@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { RtcEngineEvents } from '../../../engine';
-import { useEngine } from '../../../hooks/engines';
+import { useEngine } from '../../../hooks/engine';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
 import './index.css';

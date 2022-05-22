@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useRef, useState } from 'react';
 import { ScreenSelector, ScreenSelectorHandler } from '../../components/ScreenSelector';
 import { DisplayInfo, WindowInfo } from '../../engine';
-import { useEngine } from '../engines';
+import { useEngine } from '../engine';
 import { ShareScreenContext } from './context';
 
 export const ShareScreenProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
@@ -17,16 +17,18 @@ export const ShareScreenProvider: FC<PropsWithChildren<{}>> = ({ children }) => 
     setScreenModal(false);
   };
 
-  const openModal = (cb: ScreenSelectorHandler) => {
+  const openModal = async (cb: ScreenSelectorHandler) => {
     if (!rtcEngine) {
       return;
     }
-    Promise.all([rtcEngine.getScreenDisplaysInfo(), rtcEngine.getScreenWindowsInfo()]).then(([displays, windows]) => {
-      cbRef.current = cb;
-      setDisplays(displays || []);
-      setWindows(windows || []);
-      setScreenModal(true);
-    });
+    return Promise.all([rtcEngine.getScreenDisplaysInfo(), rtcEngine.getScreenWindowsInfo()]).then(
+      ([displays, windows]) => {
+        cbRef.current = cb;
+        setDisplays(displays || []);
+        setWindows(windows || []);
+        setScreenModal(true);
+      }
+    );
   };
 
   return (

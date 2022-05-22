@@ -17,6 +17,8 @@ const message = {
   'modal.screen.selector.tab.display': 'Desktop',
   'modal.screen.selector.tab.window': 'Windows',
   'modal.camera.selector.title': 'Please select camera which you want to open.',
+  'modal.camera.selector.resolution': 'Resolution',
+  'modal.camera.selector.device': 'Device',
   'modal.camera.selector.ok': 'OK',
   'message.permissions.screen': 'No Screen Recording Permissions',
   'host.menu.layer.new': 'New Layer',

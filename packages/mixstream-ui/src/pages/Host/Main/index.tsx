@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { DisplayInfo, ShareScreenType, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../engine';
-import { useEngine } from '../../../hooks/engines';
+import { useEngine } from '../../../hooks/engine';
 import { useShareCamera } from '../../../hooks/shareCamera/useShareCamera';
 import { useShareScreen } from '../../../hooks/shareScreen/useShareScreen';
 import { useStream } from '../../../hooks/stream';

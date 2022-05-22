@@ -24,6 +24,22 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
     return streams.filter((v) => v.sourceType < 2).length < 2;
   }, [streams]);
 
+  const freeScreenCaptureSource = useMemo(() => {
+    const arr = streams.filter((v) => v.sourceType >= 2);
+    if (arr.length === 2) {
+      return null;
+    }
+    return arr.some((v) => v.sourceType === 2) ? 3 : 2;
+  }, [streams]);
+
+  const freeCameraCaptureSource = useMemo(() => {
+    const arr = streams.filter((v) => v.sourceType <= 2);
+    if (arr.length === 2) {
+      return null;
+    }
+    return arr.some((v) => v.sourceType === 0) ? 1 : 0;
+  }, [streams]);
+
   const addStream = useCallback((data: LayerConfig) => {
     setStreams((pre) => {
       const item = pre.find((v) => v.sourceType === data.sourceType);
@@ -105,6 +121,8 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
         shareCamera,
         shareScreen,
         shareWhiteboard,
+        freeCameraCaptureSource,
+        freeScreenCaptureSource,
       }}
     >
       {children}

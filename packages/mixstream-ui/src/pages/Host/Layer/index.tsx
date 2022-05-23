@@ -1,15 +1,17 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
-import { FC, useCallback, useId, useMemo, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
 import { useMount, useWindowSize } from 'react-use';
 import {
   DisplayInfo,
+  getResolutionSize,
   RtcEngineControl,
   ScreenCaptureFullScreenRect,
   VideoDeviceInfo,
   VIDEO_SOURCE_TYPE,
   WindowInfo,
 } from '../../../engine';
+import { useStream } from '../../../hooks/stream';
 import './index.css';
 
 export enum LayerType {
@@ -25,12 +27,18 @@ export interface LayerConfig {
   isCaptureWindow: boolean; // 用来区分 LayerType.SCREEN 是窗口还是显示器
   windowId: number;
   displayId: number;
-  x: number;
-  y: number;
   frameRate: number;
   bitrate: number;
   width: number;
   height: number;
+  x: number;
+  y: number;
+  origin: {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+  };
 }
 
 interface LayerProps {
@@ -46,21 +54,34 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   const uid = useId();
   const domRef = useRef<HTMLDivElement>(null);
   const { width: windowWidth } = useWindowSize();
-  const [config, setConfig] = useState(data);
-  const canvasSize = useMemo(() => {
-    return {
-      width: windowWidth * 0.8, // 80vw
-      height: windowWidth * 0.45, // 45vw
-    };
-  }, [windowWidth]);
+  console.log('🚀 ~ file: index.tsx ~ line 57 ~ windowWidth', windowWidth);
+  const { updateStreams, resolution } = useStream();
 
+  // 布局存储的是百分比
   const [layout, setLayout] = useState({
-    width: canvasSize.width,
-    height: canvasSize.height,
+    width: 100,
+    height: 100,
     left: 0,
     top: 0,
     zIndex: 100,
   });
+
+  // 换算图层在合图的时候的布局数据
+  useEffect(() => {
+    const { width: resolutionWidth, height: resolutionHeight } = getResolutionSize(resolution);
+    const { width: layoutWidth, height: layoutHeight, left, top, zIndex } = layout;
+    const x = (resolutionWidth * left) / 100;
+    const y = (resolutionHeight * top) / 100;
+    const width = (resolutionWidth * layoutWidth) / 100;
+    const height = (resolutionHeight * layoutHeight) / 100;
+    updateStreams(data.sourceType, {
+      width,
+      height,
+      x,
+      y,
+      zOrder: zIndex,
+    });
+  }, [data.sourceType, layout, resolution, updateStreams]);
 
   const { show } = useContextMenu({
     id: uid,
@@ -79,39 +100,37 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   const setupCameraLocalView = useCallback(
     async (dom: HTMLDivElement, layerConfig: LayerConfig) => {
       if (rtcEngine && dom) {
-        const { width, height, x, y, sourceType, zOrder, deviceId } = layerConfig;
+        const {
+          origin: { width, height },
+          sourceType,
+          deviceId,
+        } = layerConfig;
         setLayout((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
           switch (
             sourceType // 这个版本通过 VIDEO_SOURCE_TYPE 判断是第一个摄像头还是第二个
           ) {
-            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY: // 左边
+            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY: // 左边
               return {
-                ...computeEquidistantSize(
-                  { width, height },
-                  { maxWidth: canvasSize.width, maxHeight: canvasSize.height }
-                ),
-                left: 0,
+                width: 20,
+                height: 20,
+                left: 80,
                 top: 0,
                 zIndex: 101,
               };
-            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 右边
+            case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY: // 右边
               return {
-                ...computeEquidistantSize(
-                  { width, height },
-                  { maxWidth: canvasSize.width * 0.2, maxHeight: canvasSize.height * 0.2 }
-                ),
+                width: 20,
+                height: 20,
                 left: 0,
-                top: canvasSize.width * 0.8,
+                top: 0,
                 zIndex: 101,
               };
             default:
               return {
                 ...pre,
-                ...computeEquidistantSize(
-                  { width, height },
-                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
-                ),
+                width: 50,
+                height: 50,
               };
           }
         });
@@ -123,29 +142,27 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
         if (code !== 0) {
           return code;
         }
-        const videoInputConfig = rtcEngine.localTranscoder.createVideoInputStreamConfig({
-          sourceType,
-          x,
-          y,
-          width,
-          height,
-          zOrder,
-        });
-        rtcEngine.localTranscoder.addVideoInputStream(videoInputConfig);
         const dID = sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1;
-        return rtcEngine.setupLocalViewAndPreview(0, dID, dom, sourceType);
+        return rtcEngine.setupLocalViewWithStartPreview(0, dID, dom, sourceType);
       }
       return -999;
     },
-    [canvasSize.height, canvasSize.width, rtcEngine]
+    [rtcEngine]
   );
 
   // 渲染共享屏幕
   const setupScreenLocalView = useCallback(
     async (dom: HTMLDivElement, layerConfig: LayerConfig) => {
       if (rtcEngine && dom) {
-        const { width, height, x, y, sourceType, zOrder, displayId, isCaptureWindow, windowId, frameRate, bitrate } =
-          layerConfig;
+        const {
+          origin: { width, height },
+          sourceType,
+          displayId,
+          isCaptureWindow,
+          windowId,
+          frameRate,
+          bitrate,
+        } = layerConfig;
         setLayout((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
           switch (
@@ -153,31 +170,25 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
           ) {
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY: // 窗口 满屏
               return {
-                ...computeEquidistantSize(
-                  { width, height },
-                  { maxWidth: canvasSize.width, maxHeight: canvasSize.height }
-                ),
+                width: 100,
+                height: 100,
                 left: 0,
                 top: 0,
                 zIndex: 98,
               };
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 白板
               return {
-                ...computeEquidistantSize(
-                  { width, height },
-                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
-                ),
+                width: 50,
+                height: 50,
                 left: 0,
-                top: canvasSize.height * 0.5,
+                top: 50,
                 zIndex: 99,
               };
             default:
               return {
                 ...pre,
-                ...computeEquidistantSize(
-                  { width, height },
-                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
-                ),
+                width: 50,
+                height: 50,
               };
           }
         });
@@ -201,30 +212,20 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
         if (code !== 0) {
           return code;
         }
-        const videoInputConfig = rtcEngine.localTranscoder.createVideoInputStreamConfig({
-          sourceType,
-          x,
-          y,
-          width,
-          height,
-          zOrder,
-        });
-        rtcEngine.localTranscoder.addVideoInputStream(videoInputConfig);
         const dID = sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY ? 0 : 1;
-        return rtcEngine.setupLocalViewAndPreview(3, dID, dom, sourceType);
+        return rtcEngine.setupLocalViewWithStartPreview(3, dID, dom, sourceType);
       }
       return -999;
     },
-    [canvasSize.height, canvasSize.width, rtcEngine]
+    [rtcEngine]
   );
 
   useMount(() => {
-    if (domRef.current && config) {
-      console.log(`🚀  useEffectOnce ~ config ${uid}`, config);
-      if (config.sourceType >= 2) {
-        setupScreenLocalView(domRef.current, config);
+    if (domRef.current && data) {
+      if (data.sourceType >= 2) {
+        setupScreenLocalView(domRef.current, data);
       } else {
-        setupCameraLocalView(domRef.current, config);
+        setupCameraLocalView(domRef.current, data);
       }
     }
   });
@@ -238,10 +239,22 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     },
     [data.sourceType, remove]
   );
+
+  const styles = useMemo(() => {
+    const { width, height, left, top, zIndex } = layout;
+    return {
+      width: `${width}%`,
+      height: `${height}%`,
+      left: `${left}%`,
+      top: `${top}%`,
+      zIndex,
+    };
+  }, [layout]);
+
   return (
     <div
       className={`layer container ${className ? className : ''}`}
-      style={layout}
+      style={styles}
       onContextMenu={handleContextMenu}
       ref={domRef}
     >
@@ -258,18 +271,27 @@ export const getLayerConfigFromDisplayInfo = (
   sourceType: VIDEO_SOURCE_TYPE,
   options?: Partial<LayerConfig>
 ): LayerConfig => {
-  const { id, ...rest } = data.displayId;
+  const { id, width, height, x, y } = data.displayId;
   return {
     type: LayerType.SCREEN,
     displayId: id,
     sourceType,
-    ...rest,
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0,
     isCaptureWindow: false,
     windowId: 0,
     deviceId: '',
     frameRate: 5,
     bitrate: 0,
     zOrder: 300,
+    origin: {
+      width,
+      height,
+      x,
+      y,
+    },
     ...options,
   };
 };
@@ -278,36 +300,44 @@ export const getLayerConfigFromWindowInfo = (
   sourceType: VIDEO_SOURCE_TYPE,
   options?: Partial<LayerConfig>
 ): LayerConfig => {
+  const { width, height, x, y } = data;
   return {
     type: LayerType.SCREEN,
     sourceType,
     isCaptureWindow: true,
-    x: data.x,
-    y: data.y,
-    width: data.width,
-    height: data.height,
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
     deviceId: '',
     windowId: data.windowId,
     displayId: 0,
     zOrder: 300,
     frameRate: 5,
     bitrate: 0,
+    origin: {
+      width,
+      height,
+      x,
+      y,
+    },
     ...options,
   };
 };
 
 export const getLayerConfigFromMediaDeviceInfo = (
-  data: VideoDeviceInfo,
+  data: VideoDeviceInfo & Pick<LayerConfig, 'width' | 'height'>,
   sourceType: VIDEO_SOURCE_TYPE,
   options?: Partial<LayerConfig>
 ): LayerConfig => {
+  const { deviceid, width, height } = data;
   return {
     type: LayerType.CAMERA,
-    deviceId: data.deviceid,
+    deviceId: deviceid,
     x: 0,
     y: 0,
-    width: 300,
-    height: 200,
+    width: 0,
+    height: 0,
     sourceType,
     isCaptureWindow: false,
     windowId: 0,
@@ -315,6 +345,12 @@ export const getLayerConfigFromMediaDeviceInfo = (
     zOrder: 300,
     frameRate: 5,
     bitrate: 0,
+    origin: {
+      width,
+      height,
+      x: 0,
+      y: 0,
+    },
     ...options,
   };
 };

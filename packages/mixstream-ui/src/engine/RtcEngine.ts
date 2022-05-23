@@ -1,11 +1,16 @@
 import AgoraRtcEngine from 'agora-electron-sdk';
-import { ChannelMediaOptions, ScreenCaptureConfiguration, VideoFormat } from 'agora-electron-sdk/types/Api/native_type';
+import {
+  ChannelMediaOptions,
+  LocalTranscoderConfiguration,
+  ScreenCaptureConfiguration,
+  VideoFormat,
+} from 'agora-electron-sdk/types/Api/native_type';
 import { message } from 'antd';
 import { remote } from 'electron';
 import EventEmitter from 'eventemitter3';
 import { isMacOS } from '../utils';
-import { LocalTranscoder } from './LocalTranscoder';
 import { DisplayInfo, VideoDeviceInfo, VIDEO_SOURCE_TYPE, WindowInfo } from './type';
+
 const LOGS_FOLDER = isMacOS() ? `${window.process.env.HOME}/Library/Logs/MixStreamClient` : './log';
 
 export enum RtcEngineEvents {
@@ -16,8 +21,6 @@ export enum RtcEngineEvents {
 
 export class RtcEngine extends EventEmitter {
   private _rtcEngine: AgoraRtcEngine;
-
-  localTranscoder = new LocalTranscoder();
 
   constructor(appId: string) {
     super();
@@ -51,20 +54,14 @@ export class RtcEngine extends EventEmitter {
     this._rtcEngine.enableLocalVideo(true);
   }
 
-  private _isJoinedChannel = false;
-
   joinChannel(token: string, channel: string, uid: number): number {
-    if (this._isJoinedChannel) {
-      console.warn('You have joined the channel');
-      return 0;
-    }
     const code = this._rtcEngine.joinChannel(token, channel, '', uid);
     if (code !== 0) {
       throw new Error(`Failed to join channel with error code: ${code}`);
     }
-    this._isJoinedChannel = true;
     return code;
   }
+
   updateChannelMediaOptions(data: ChannelMediaOptions) {
     const code = this._rtcEngine.updateChannelMediaOptions(data);
     if (code !== 0) {
@@ -74,19 +71,15 @@ export class RtcEngine extends EventEmitter {
   }
 
   leaveChannel() {
-    if (!this._isJoinedChannel) {
-      return;
-    }
     const code = this._rtcEngine.leaveChannel();
     if (code !== 0) {
       throw new Error(`Failed to leave channel with error code: ${code}`);
     }
-    this._isJoinedChannel = false;
     return code;
   }
 
-  startLocalVideoTranscoder() {
-    const config = this.localTranscoder.getConfig();
+  startLocalVideoTranscoder(config: LocalTranscoderConfiguration) {
+    console.log('🚀 ~ RtcEngine ~ startLocalVideoTranscoder ~ config', config);
     let code = this._rtcEngine.startLocalVideoTranscoder(config);
     if (code !== 0) {
       throw new Error(`Failed to startLocalVideoTranscoder with error code: ${code}`);
@@ -95,6 +88,7 @@ export class RtcEngine extends EventEmitter {
   }
 
   stopLocalVideoTranscoder() {
+    console.log('🚀 ~  stopLocalVideoTranscoder');
     let code = this._rtcEngine.stopLocalVideoTranscoder();
     if (code !== 0) {
       throw new Error(`Failed to stopLocalVideoTranscoder with error code: ${code}`);
@@ -102,8 +96,8 @@ export class RtcEngine extends EventEmitter {
     return code;
   }
 
-  updateLocalTranscoderConfiguration() {
-    const config = this.localTranscoder.getConfig();
+  updateLocalTranscoderConfiguration(config: LocalTranscoderConfiguration) {
+    console.log('🚀  updateLocalTranscoderConfiguration ~ config', config);
     const code = this._rtcEngine.updateLocalTranscoderConfiguration(config);
     if (code !== 0) {
       throw new Error(`Failed to updateLocalTranscoderConfiguration with error code: ${code}`);
@@ -129,17 +123,15 @@ export class RtcEngine extends EventEmitter {
     return code;
   }
 
-  setupLocalViewAndPreview(type: number, deviceId: number, attachEl: HTMLElement, sourceType: VIDEO_SOURCE_TYPE) {
-    console.log(`🚀 ~ setupLocalView type:${type}  deviceId:${deviceId}`);
+  setupLocalView(type: number, deviceId: number, attachEl: HTMLElement) {
     const code = this._rtcEngine.setupLocalView(type, deviceId, attachEl, { append: false });
     if (code !== 0) {
       throw new Error(`Failed to setupLocalView with error code: ${code}`);
     }
-    return this.startPreview(sourceType);
+    return code;
   }
 
   startPreview(sourceType: VIDEO_SOURCE_TYPE) {
-    console.log('🚀 ~ startPreview sourceType:', sourceType);
     const code = this._rtcEngine.startPreview(sourceType);
     if (code !== 0) {
       throw new Error(`Failed to startPreview with error code: ${code}`);
@@ -148,7 +140,6 @@ export class RtcEngine extends EventEmitter {
   }
 
   stopPreview(sourceType: VIDEO_SOURCE_TYPE) {
-    console.log('🚀 ~ stopPreview sourceType:', sourceType);
     const code = this._rtcEngine.stopPreview(sourceType);
     if (code !== 0) {
       throw new Error(`Failed to stopPreview with error code: ${code}`);

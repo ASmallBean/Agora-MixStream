@@ -1,5 +1,5 @@
 import { createContext, Dispatch, SetStateAction } from 'react';
-import { VIDEO_SOURCE_TYPE } from '../../engine';
+import { bitrates, VIDEO_SOURCE_TYPE } from '../../engine';
 import { LayerConfig } from '../../pages/Host/Layer';
 
 export interface StreamContextProps {
@@ -10,12 +10,12 @@ export interface StreamContextProps {
   whiteboard: boolean;
   setWhiteboard: Dispatch<SetStateAction<boolean>>;
   streams: LayerConfig[];
-  resolution: number;
+  resolution: string;
 
-  updateResolution: (data: number) => void;
+  updateResolution: (data: string) => void;
   addStream: (data: LayerConfig) => void;
   removeStream: (sourceType: LayerConfig['sourceType']) => void;
-  updateStreams: (sourceType: LayerConfig['sourceType'], data: LayerConfig) => void;
+  updateStreams: (sourceType: LayerConfig['sourceType'], data: Partial<LayerConfig>) => void;
   shareCamera: boolean;
   shareScreen: boolean;
   shareWhiteboard: boolean;
@@ -30,7 +30,7 @@ export const StreamContext = createContext<StreamContextProps>({
   setAudio: () => {},
   whiteboard: false,
   setWhiteboard: () => {},
-  resolution: 1000,
+  resolution: bitrates[0],
   updateResolution: () => {},
   streams: [],
   addStream: () => {},

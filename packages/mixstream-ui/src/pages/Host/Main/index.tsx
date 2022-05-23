@@ -27,8 +27,13 @@ const HostMain = () => {
       switch (event) {
         case MenuEventEnum.CreateCameraLayer:
           if (openShareCameraModal) {
-            openShareCameraModal(async (camera) => {
-              addStream(getLayerConfigFromMediaDeviceInfo(camera, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY));
+            openShareCameraModal(async (deviceInfo, resolution) => {
+              addStream(
+                getLayerConfigFromMediaDeviceInfo(
+                  { ...deviceInfo, ...resolution },
+                  VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY
+                )
+              );
               return;
             });
           }

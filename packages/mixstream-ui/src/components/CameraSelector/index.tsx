@@ -34,7 +34,6 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
   const domRef = useRef<HTMLDivElement>(null);
   const [form] = Form.useForm<CameraForm>();
   const [devices, setDevices] = useState<VideoDeviceInfo[]>([]);
-  const useCameraCaptureSource = useRef<number | null>(null);
 
   const handleOk = async () => {
     const value = await form.validateFields();
@@ -50,13 +49,12 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       const value = await form.validateFields();
       const { deviceId, resolution } = value;
       rtcEngine.startCameraCapture(freeCameraCaptureSource, deviceId, resolutionMap[resolution]);
-      rtcEngine.setupLocalViewAndPreview(
+      rtcEngine.setupLocalViewWithStartPreview(
         0,
         freeCameraCaptureSource === 0 ? 0 : 1,
         domRef.current,
         freeCameraCaptureSource
       );
-      useCameraCaptureSource.current = freeCameraCaptureSource;
     }
   }, [form, freeCameraCaptureSource, rtcEngine]);
 
@@ -75,10 +73,6 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       }
       form.submit();
       return;
-    }
-    if (useCameraCaptureSource.current !== null) {
-      rtcEngine?.stopPreview(useCameraCaptureSource.current);
-      useCameraCaptureSource.current = null;
     }
   }, [form, rtcEngine, visible]);
 

@@ -41,6 +41,7 @@ const HostMenu = () => {
     shareScreen,
     shareWhiteboard,
     removeStream,
+    streams,
   } = useStream();
   const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
 
@@ -137,19 +138,15 @@ const HostMenu = () => {
           if (rtcEngine) {
             let code;
             if (play) {
-              code = rtcEngine.stopLocalVideoTranscoder();
+              code = rtcEngine.stop();
               // 停止推流
             } else {
-              code = rtcEngine.startLocalVideoTranscoder();
-              if (code !== 0) {
-                return;
-              }
               const stream = findVideoStreamFromProfile(profile);
               if (!stream || !channel) {
                 return;
               }
               const { token, uid } = stream;
-              code = rtcEngine.joinChannelWithPublishTrancodedVideoTrack(token, channel, uid);
+              code = rtcEngine.play({ token, channel, uid }, streams);
             }
             if (code === 0) {
               setPlay((pre) => !pre);

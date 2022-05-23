@@ -1,7 +1,18 @@
-import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
-import { LocalTranscoder } from './LocalTranscoder';
+import {
+  LocalTranscoderConfiguration,
+  ScreenCaptureConfiguration,
+  VideoEncoderConfiguration,
+} from 'agora-electron-sdk/types/Api/native_type';
+import { LayerConfig } from '../pages/Host/Layer';
 import { RtcEngine } from './RtcEngine';
-import { DisplayInfo, WindowInfo } from './type';
+import {
+  DEGRADATION_PREFERENCE,
+  DisplayInfo,
+  ORIENTATION_MODE,
+  VIDEO_MIRROR_MODE_TYPE,
+  VIDEO_SOURCE_TYPE,
+  WindowInfo,
+} from './type';
 
 export const ScreenCaptureFullScreenRect = {
   width: 0,
@@ -15,10 +26,26 @@ export interface Resolution {
   height: number;
 }
 
+interface ChannelInfo {
+  token: string;
+  channel: string;
+  uid: number;
+}
+
 export const bitrateMap: { [key: string]: number } = {
-  '1920x1080': 2000,
-  '1280x720': 1000,
+  '1920x1080': 2080,
+  '1280x720': 1135,
 };
+
+export const bitrates = Object.keys(bitrateMap);
+
+export function getResolutionSize(resolution: string) {
+  const resule = resolution.split('x');
+  return {
+    width: Number(resule[0]),
+    height: Number(resule[1]),
+  };
+}
 
 export const resolutionMap: { [key: string]: Resolution } = {
   '1920x1080': {
@@ -47,15 +74,32 @@ export class RtcEngineControl extends RtcEngine {
     return this.instance;
   }
 
-  localTranscoder = new LocalTranscoder();
-
   constructor(appId: string) {
     super(appId);
     return;
   }
 
+  private _isJoinedChannel = false;
+
+  play(channelInfo: ChannelInfo, layers: LayerConfig[], options?: Partial<VideoEncoderConfiguration>) {
+    const { token, channel, uid } = channelInfo;
+    const config = this.layer2TranscodingConfig(layers, options);
+    let code = this.startLocalVideoTranscoder(config);
+    if (code !== 0) {
+      return;
+    }
+    if (this._isJoinedChannel) {
+      return code;
+    }
+    return this.joinChannelWithPublishTrancodedVideoTrack(token, channel, uid);
+  }
+  stop() {
+    return this.stopLocalVideoTranscoder();
+  }
+
   joinChannelWithPublishTrancodedVideoTrack(token: string, channel: string, uid: number) {
     const code = this.joinChannel(token, channel, uid);
+    console.log('🚀 ~ file: joinChannelWithPublishTrancodedVideoTrack ~ joinChannel', code);
     if (code !== 0) {
       return code;
     }
@@ -86,6 +130,7 @@ export class RtcEngineControl extends RtcEngine {
       publishCustomAudioTrackAec: false,
       audienceLatencyLevel: 2,
     };
+    this._isJoinedChannel = true;
     return this.updateChannelMediaOptions(data);
   }
 
@@ -124,5 +169,52 @@ export class RtcEngineControl extends RtcEngine {
       },
       regionRect: DEFAULT_RECT,
     };
+  }
+
+  setupLocalViewWithStartPreview(type: number, deviceId: number, attachEl: HTMLElement, sourceType: VIDEO_SOURCE_TYPE) {
+    const code = this.setupLocalView(type, deviceId, attachEl);
+    if (code !== 0) {
+      return code;
+    }
+    return this.startPreview(sourceType);
+  }
+
+  layer2TranscodingConfig(
+    layers: LayerConfig[],
+    options?: Partial<VideoEncoderConfiguration>
+  ): LocalTranscoderConfiguration {
+    console.log('🚀 ~ file: RtcEngineControl.ts ~ line 161 ~ RtcEngineControl ~ layers', layers);
+    const outputStreams = layers.map((v) => {
+      const { sourceType, x, y, width, height, zOrder } = v;
+      return {
+        sourceType,
+        x,
+        y,
+        width,
+        height,
+        zOrder,
+        remoteUserUid: 0,
+        imageUrl: '',
+        alpha: 1,
+        mirror: true,
+      };
+    });
+    const result: LocalTranscoderConfiguration = {
+      streamCount: outputStreams.length,
+      videoInputStreams: outputStreams,
+      videoOutputConfiguration: {
+        codecType: 1,
+        width: 1920,
+        height: 1080,
+        frameRate: 15,
+        bitrate: 2080,
+        minBitrate: 2080,
+        orientationMode: ORIENTATION_MODE.ORIENTATION_MODE_ADAPTIVE,
+        degradationPreference: DEGRADATION_PREFERENCE.MAINTAIN_QUALITY,
+        mirrorMode: VIDEO_MIRROR_MODE_TYPE.VIDEO_MIRROR_MODE_AUTO,
+        ...options,
+      } as any,
+    };
+    return result;
   }
 }

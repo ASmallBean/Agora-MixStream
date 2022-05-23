@@ -22,7 +22,7 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
     }
     const { appId } = stream;
     const engine = RtcEngineControl.singleton(appId);
-    engine.joinChannelInit();
+    engine.engineInit();
     setRtcEngine(engine);
   }, [profile, session, rtcEngine]);
 

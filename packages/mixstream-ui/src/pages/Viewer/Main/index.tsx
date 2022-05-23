@@ -21,7 +21,7 @@ const ViewerMain = () => {
         rtcEngine.subscribe(uid, connId.channelId, videoRef.current);
       }
     };
-    rtcEngine.on(RtcEngineEvents.ADDSTREAM, handle);
+    rtcEngine.on(RtcEngineEvents.ADD_STREAM, handle);
     return () => {
       rtcEngine.off('addStream', handle);
     };

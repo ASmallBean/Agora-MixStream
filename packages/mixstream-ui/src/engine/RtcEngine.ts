@@ -5,11 +5,11 @@ import { remote } from 'electron';
 import EventEmitter from 'eventemitter3';
 import { isMacOS } from '../utils';
 import { LocalTranscoder } from './LocalTranscoder';
-import { DisplayInfo, VIDEO_SOURCE_TYPE, WindowInfo } from './type';
+import { DisplayInfo, VideoDeviceInfo, VIDEO_SOURCE_TYPE, WindowInfo } from './type';
 const LOGS_FOLDER = isMacOS() ? `${window.process.env.HOME}/Library/Logs/MixStreamClient` : './log';
 
 export enum RtcEngineEvents {
-  ADDSTREAM = 'addStream',
+  ADD_STREAM = 'addStream',
   NETWORK_QUALITY_CHANGE = 'networkQualityChange',
   VIDEO_DEVICE_STATE_CHANGED = 'videoDeviceStateChanged',
 }
@@ -32,7 +32,7 @@ export class RtcEngine extends EventEmitter {
 
   private bindEvents() {
     this._rtcEngine.on('addStream', (connId: number, uid: number, elapsed: number) => {
-      this.emit(RtcEngineEvents.ADDSTREAM, { uid, connId, elapsed });
+      this.emit(RtcEngineEvents.ADD_STREAM, { uid, connId, elapsed });
     });
     this._rtcEngine.on('networkQuality', (_uid, up, down) => {
       this.emit(RtcEngineEvents.NETWORK_QUALITY_CHANGE, { up, down });
@@ -42,19 +42,19 @@ export class RtcEngine extends EventEmitter {
     });
   }
 
-  async joinChannelInit() {
+  async engineInit() {
     this._rtcEngine.setChannelProfile(0);
     this._rtcEngine.setClientRole(1);
     this._rtcEngine.enableVideo();
     this._rtcEngine.enableAudio();
-    this._rtcEngine.enableLocalAudio(false);
-    this._rtcEngine.enableLocalVideo(false);
+    this._rtcEngine.enableLocalAudio(true);
+    this._rtcEngine.enableLocalVideo(true);
   }
 
-  private _isJoined = false;
+  private _isJoinedChannel = false;
 
   joinChannel(token: string, channel: string, uid: number): number {
-    if (this._isJoined) {
+    if (this._isJoinedChannel) {
       console.warn('You have joined the channel');
       return 0;
     }
@@ -62,27 +62,26 @@ export class RtcEngine extends EventEmitter {
     if (code !== 0) {
       throw new Error(`Failed to join channel with error code: ${code}`);
     }
-    this._isJoined = true;
+    this._isJoinedChannel = true;
+    return code;
+  }
+  updateChannelMediaOptions(data: ChannelMediaOptions) {
+    const code = this._rtcEngine.updateChannelMediaOptions(data);
+    if (code !== 0) {
+      throw new Error(`Failed to updateChannelMediaOptions with error code: ${code}`);
+    }
     return code;
   }
 
   leaveChannel() {
-    if (!this._isJoined) {
+    if (!this._isJoinedChannel) {
       return;
     }
     const code = this._rtcEngine.leaveChannel();
     if (code !== 0) {
       throw new Error(`Failed to leave channel with error code: ${code}`);
     }
-    this._isJoined = false;
-    return code;
-  }
-
-  updateChannelMediaOptions(data: ChannelMediaOptions) {
-    const code = this._rtcEngine.updateChannelMediaOptions(data);
-    if (code !== 0) {
-      throw new Error(`Failed to updateChannelMediaOptions with error code: ${code}`);
-    }
+    this._isJoinedChannel = false;
     return code;
   }
 
@@ -130,30 +129,6 @@ export class RtcEngine extends EventEmitter {
     return code;
   }
 
-  enableAudio() {
-    let code = this._rtcEngine.enableAudio();
-    if (code !== 0) {
-      throw new Error(`Failed to enableAudio with error code: ${code}`);
-    }
-    code = this._rtcEngine.enableLocalAudio(true);
-    if (code !== 0) {
-      throw new Error(`Failed to enableLocalAudio true with error code: ${code}`);
-    }
-    return code;
-  }
-
-  disableAudio() {
-    let code = this._rtcEngine.disableAudio();
-    if (code !== 0) {
-      throw new Error(`Failed to disableAudio with error code: ${code}`);
-    }
-    code = this._rtcEngine.enableLocalAudio(false);
-    if (code !== 0) {
-      throw new Error(`Failed to enableLocalAudio false with error code: ${code}`);
-    }
-    return code;
-  }
-
   setupLocalViewAndPreview(type: number, deviceId: number, attachEl: HTMLElement, sourceType: VIDEO_SOURCE_TYPE) {
     console.log(`🚀 ~ setupLocalView type:${type}  deviceId:${deviceId}`);
     const code = this._rtcEngine.setupLocalView(type, deviceId, attachEl, { append: false });
@@ -181,17 +156,34 @@ export class RtcEngine extends EventEmitter {
     return code;
   }
 
-  async getScreenDisplaysInfo() {
+  getVideoDevices() {
+    return this._rtcEngine.getVideoDevices() as VideoDeviceInfo[];
+  }
+
+  getScreenDisplaysInfo() {
     return this._rtcEngine.getScreenDisplaysInfo() as DisplayInfo[];
   }
 
-  async getScreenWindowsInfo() {
+  getScreenWindowsInfo() {
     return this._rtcEngine.getScreenWindowsInfo() as WindowInfo[];
   }
 
-  publishOrUnpublish(audio?: boolean, video?: boolean) {
-    this._rtcEngine.enableLocalAudio(!!audio);
-    this._rtcEngine.enableLocalVideo(!!video);
+  publishOrUnpublish(options: { audio?: boolean; video?: boolean }) {
+    const { audio, video } = options;
+    let code;
+    if (audio !== undefined) {
+      code = this._rtcEngine.enableLocalAudio(!!audio);
+      if (code !== 0) {
+        throw new Error(`Failed to enableLocalAudio with error code: ${code}`);
+      }
+    }
+    if (video !== undefined) {
+      code = this._rtcEngine.enableLocalVideo(!!video);
+      if (code !== 0) {
+        throw new Error(`Failed to enableLocalVideo with error code: ${code}`);
+      }
+    }
+    return code;
   }
 
   hasScreenPermissions() {
@@ -204,15 +196,13 @@ export class RtcEngine extends EventEmitter {
   }
 
   startCameraCapture(type: VIDEO_SOURCE_TYPE, deviceId: string, option?: Partial<VideoFormat>): number {
-    this._rtcEngine.enableVideo();
-    this._rtcEngine.enableLocalVideo(true);
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY;
     const config = {
       deviceId: deviceId,
       format: {
         width: 1280,
         height: 720,
-        fps: 5,
+        fps: 10,
         ...option,
       },
       // @ts-ignore 这个参数是sdk漏掉的，不写的话c++会参数类型报错

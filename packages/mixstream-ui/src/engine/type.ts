@@ -37,6 +37,10 @@ export enum ShareScreenType {
   Window = 'window',
 }
 
+export interface VideoDeviceInfo {
+  deviceid: string;
+  devicename: string;
+}
 /**
  * Video source types definition.
  **/

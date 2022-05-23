@@ -14,16 +14,22 @@ export interface Resolution {
   width: number;
   height: number;
 }
+
+export const bitrateMap: { [key: string]: number } = {
+  '1920x1080': 2000,
+  '1280x720': 1000,
+};
+
 export const resolutionMap: { [key: string]: Resolution } = {
-  '1920 x 1080': {
+  '1920x1080': {
     width: 1920,
     height: 1080,
   },
-  '1280 x 720': {
+  '1280x720': {
     width: 1280,
     height: 720,
   },
-  '640 x 360': {
+  '640x360': {
     width: 640,
     height: 360,
   },

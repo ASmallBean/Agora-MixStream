@@ -1,7 +1,7 @@
 import { createContext } from 'react';
-import { Resolution } from '../../engine';
+import { Resolution, VideoDeviceInfo } from '../../engine';
 
-export type ShareCameraCallback = (device: MediaDeviceInfo, resolution: Resolution) => void;
+export type ShareCameraCallback = (device: VideoDeviceInfo, resolution: Resolution) => void;
 
 interface ContextTypes {
   openModal: (cb: ShareCameraCallback) => void;

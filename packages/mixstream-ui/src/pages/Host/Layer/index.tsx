@@ -6,6 +6,7 @@ import {
   DisplayInfo,
   RtcEngineControl,
   ScreenCaptureFullScreenRect,
+  VideoDeviceInfo,
   VIDEO_SOURCE_TYPE,
   WindowInfo,
 } from '../../../engine';
@@ -296,13 +297,13 @@ export const getLayerConfigFromWindowInfo = (
 };
 
 export const getLayerConfigFromMediaDeviceInfo = (
-  data: MediaDeviceInfo,
+  data: VideoDeviceInfo,
   sourceType: VIDEO_SOURCE_TYPE,
   options?: Partial<LayerConfig>
 ): LayerConfig => {
   return {
     type: LayerType.CAMERA,
-    deviceId: data.deviceId,
+    deviceId: data.deviceid,
     x: 0,
     y: 0,
     width: 300,

@@ -8,11 +8,11 @@ import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
-  <React.StrictMode>
-    <Language>
-      <App />
-    </Language>
-  </React.StrictMode>
+  // <React.StrictMode>
+  <Language>
+    <App />
+  </Language>
+  // </React.StrictMode>
 );
 
 reportWebVitals();

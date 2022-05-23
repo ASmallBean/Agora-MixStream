@@ -52,7 +52,7 @@ const HostMain = () => {
           }
           break;
         case MenuEventEnum.CreateWhiteboardLayer:
-          const windowInfoList = await rtcEngine.getScreenWindowsInfo();
+          const windowInfoList = rtcEngine.getScreenWindowsInfo();
           if (windowInfoList && windowInfoList.length) {
             const w = windowInfoList.find((v) => {
               return v.name === WhiteboardTitle;

@@ -4,7 +4,7 @@ import { AiOutlineAudio, AiOutlineAudioMuted, AiOutlinePauseCircle, AiOutlinePla
 import { BsBoxArrowLeft } from 'react-icons/bs';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
-import { VIDEO_SOURCE_TYPE } from '../../../engine';
+import { bitrateMap, VIDEO_SOURCE_TYPE } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
@@ -14,10 +14,6 @@ import { hostPath } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
 import './index.css';
-const bitrates: { [key: string]: number } = {
-  '1280x720': 1000,
-  '1920x1080': 2000,
-};
 
 export enum MenuEventEnum {
   CreateCameraLayer, // 创建摄像头图层
@@ -25,7 +21,7 @@ export enum MenuEventEnum {
   CreateWhiteboardLayer, // 创建白板图层
 }
 
-const bitrateOptions = Object.keys(bitrates).map((v) => ({ label: v, value: bitrates[v] }));
+const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: bitrateMap[v] }));
 
 const HostMenu = () => {
   const intl = useIntl();
@@ -124,13 +120,7 @@ const HostMenu = () => {
         })}
         onClick={_.throttle(async () => {
           if (rtcEngine) {
-            let code;
-            if (audio) {
-              // 停止音频
-              code = rtcEngine.disableAudio();
-            } else {
-              code = rtcEngine.enableAudio();
-            }
+            const code = rtcEngine.publishOrUnpublish({ audio: !audio });
             if (code === 0) {
               setAudio((pre) => !pre);
             }

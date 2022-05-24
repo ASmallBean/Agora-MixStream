@@ -55,41 +55,27 @@ export class RtcEngine extends EventEmitter {
     this._rtcEngine.enableLocalVideo(false);
   }
 
-  private _isJoined = false;
-
   joinChannel(token: string, channel: string, uid: number): number {
-    if (this._isJoined) {
-      return 0;
-    }
     const code = this._rtcEngine.joinChannel(token, channel, '', uid);
     if (code !== 0) {
       throw new Error(`Failed to join channel with error code: ${code}`);
     }
-    this._isJoined = true;
     return code;
   }
 
   joinChannelEx(token: string, connection: RtcConnection, options?: ChannelMediaOptions): number {
-    if (this._isJoined) {
-      return 0;
-    }
     const code = this._rtcEngine.joinChannelEx(token, connection, options || {});
     if (code !== 0) {
       throw new Error(`Failed to joinChannelEx with error code: ${code}`);
     }
-    this._isJoined = true;
     return code;
   }
 
   joinChannelWithMediaOptions(token: string, channelId: string, userId: number, options: ChannelMediaOptions): number {
-    if (this._isJoined) {
-      return 0;
-    }
     const code = this._rtcEngine.joinChannelWithMediaOptions(token, channelId, userId, options || {});
     if (code !== 0) {
       throw new Error(`Failed to joinChannelWithMediaOptions with error code: ${code}`);
     }
-    this._isJoined = true;
     return code;
   }
 
@@ -102,14 +88,10 @@ export class RtcEngine extends EventEmitter {
   }
 
   leaveChannel() {
-    if (!this._isJoined) {
-      return 0;
-    }
     const code = this._rtcEngine.leaveChannel();
     if (code !== 0) {
       throw new Error(`Failed to leave channel with error code: ${code}`);
     }
-    this._isJoined = false;
     return code;
   }
 

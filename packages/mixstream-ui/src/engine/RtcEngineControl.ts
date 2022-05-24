@@ -66,36 +66,7 @@ export const resolutionMap: { [key: string]: Resolution } = {
 export const DEFAULT_RECT = { x: 0, y: 0, height: 0, width: 0 };
 
 const joinChannelOptions: any = {
-  publishCameraTrack: false,
-  publishAudioTrack: false,
-  publishScreenTrack: false,
-  publishCustomAudioTrack: false,
-  publishCustomVideoTrack: false,
-  publishEncodedVideoTrack: false,
-  publishMediaPlayerAudioTrack: false,
-  publishMediaPlayerVideoTrack: false,
-  autoSubscribeAudio: false,
-  autoSubscribeVideo: false,
   publishTrancodedVideoTrack: true,
-  clientRoleType: 1,
-  channelProfile: 0,
-  publishMediaPlayerId: 0,
-  defaultVideoStreamType: 0,
-  enableAudioRecordingOrPlayout: true,
-  publishSecondaryCameraTrack: false,
-  publishTertiaryCameraTrack: false,
-  publishQuaternaryCameraTrack: false,
-  publishSecondaryScreenTrack: false,
-  publishCustomAudioSourceId: 0,
-  publishCustomAudioTrackEnableAec: false,
-  publishDirectCustomAudioTrack: false,
-  publishCustomAudioTrackAec: false,
-  audienceLatencyLevel: 2,
-  encodedVideoTrackOption: {
-    ccMode: 0,
-    codecType: 1,
-    targetBitrate: 2000,
-  },
 };
 
 export class RtcEngineControl extends RtcEngine {
@@ -116,27 +87,32 @@ export class RtcEngineControl extends RtcEngine {
   private _isJoinedChannel = false;
 
   play(channelInfo: ChannelInfo, layers: LayerConfig[], options?: Partial<VideoEncoderConfiguration>) {
+    if (this._isJoinedChannel) {
+      return -999;
+    }
     const { token, channel, uid } = channelInfo;
     const config = this.layer2TranscodingConfig(layers, options);
     let code = this.startLocalVideoTranscoder(config);
     if (code !== 0) {
       return;
     }
-    return this.joinChannelWithPublishTrancodedVideoTrack(token, channel, uid);
-  }
-
-  stop() {
-    return this.stopLocalVideoTranscoder();
-  }
-
-  joinChannelWithPublishTrancodedVideoTrack(token: string, channel: string, uid: number) {
-    if (this._isJoinedChannel) {
-      return -999;
-    }
-    const code = this.joinChannelWithMediaOptions(token, channel, uid, joinChannelOptions);
+    code = this.joinChannelWithMediaOptions(token, channel, uid, joinChannelOptions);
     if (code === 0) {
       this._isJoinedChannel = true;
     }
+    return code;
+  }
+
+  stop() {
+    let code = this.stopLocalVideoTranscoder();
+    if (code !== 0) {
+      return code;
+    }
+    code = this.leaveChannel();
+    if (code !== 0) {
+      return code;
+    }
+    this._isJoinedChannel = false;
     return code;
   }
 

@@ -1,7 +1,7 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
 import { FC, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
-import { useMount } from 'react-use';
+import { useMount, useWindowSize } from 'react-use';
 import {
   DisplayInfo,
   getResolutionSize,
@@ -54,35 +54,44 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   const uid = useId();
   const domRef = useRef<HTMLDivElement>(null);
   const { updateStreams, resolution } = useStream();
+  const { width: windowWidth } = useWindowSize();
+  const canvasSize = useMemo(() => {
+    return {
+      width: windowWidth * 0.8, // 80vw
+      height: windowWidth * 0.45, // 45vw
+    };
+  }, [windowWidth]);
 
   // 布局存储的是百分比
   const [layout, setLayout] = useState({
-    width: 100,
-    height: 100,
+    width: canvasSize.width,
+    height: canvasSize.height,
     left: 0,
     top: 0,
     zIndex: 100,
   });
 
   const styles = useMemo(() => {
-    const { width, height, left, top, zIndex } = layout;
-    return {
-      width: `${width}%`,
-      height: `${height}%`,
-      left: `${left}%`,
-      top: `${top}%`,
-      zIndex,
-    };
+    // const { width, height, left, top, zIndex } = layout;
+    // return {
+    //   width: `${width}%`,
+    //   height: `${height}%`,
+    //   left: `${left}%`,
+    //   top: `${top}%`,
+    //   zIndex,
+    // };
+    return layout;
   }, [layout]);
 
   // 换算图层在合图的时候的布局数据
   useEffect(() => {
     const { width: resolutionWidth, height: resolutionHeight } = getResolutionSize(resolution);
     const { width: layoutWidth, height: layoutHeight, left, top, zIndex } = layout;
-    const x = (resolutionWidth * left) / 100;
-    const y = (resolutionHeight * top) / 100;
-    const width = (resolutionWidth * layoutWidth) / 100;
-    const height = (resolutionHeight * layoutHeight) / 100;
+    const { width: canvasWidth, height: canvasHeight } = canvasSize;
+    const x = Math.ceil((resolutionWidth * left) / canvasWidth);
+    const y = Math.ceil((resolutionHeight * top) / canvasHeight);
+    const width = Math.ceil((resolutionWidth * layoutWidth) / canvasWidth);
+    const height = Math.ceil((resolutionHeight * layoutHeight) / canvasHeight);
     updateStreams(data.sourceType, {
       width,
       height,
@@ -90,7 +99,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
       y,
       zOrder: zIndex,
     });
-  }, [data.sourceType, layout, resolution, updateStreams]);
+  }, [canvasSize, data.sourceType, layout, resolution, updateStreams]);
 
   const { show } = useContextMenu({
     id: uid,
@@ -121,16 +130,20 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
           ) {
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY: // 左边
               return {
-                width: 20,
-                height: 20,
-                left: 80,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.2, maxHeight: canvasSize.height * 0.2 }
+                ),
+                left: canvasSize.width * 0.8,
                 top: 0,
                 zIndex: 61,
               };
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY: // 右边
               return {
-                width: 20,
-                height: 20,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.2, maxHeight: canvasSize.height * 0.2 }
+                ),
                 left: 0,
                 top: 0,
                 zIndex: 60,
@@ -138,8 +151,10 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
             default:
               return {
                 ...pre,
-                width: 50,
-                height: 50,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
+                ),
               };
           }
         });
@@ -179,16 +194,20 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
           ) {
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY: // 窗口 满屏
               return {
-                width: 100,
-                height: 100,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width, maxHeight: canvasSize.height }
+                ),
                 left: 0,
                 top: 0,
                 zIndex: 40,
               };
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 白板
               return {
-                width: 50,
-                height: 50,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
+                ),
                 left: 0,
                 top: 50,
                 zIndex: 50,
@@ -196,8 +215,10 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
             default:
               return {
                 ...pre,
-                width: 50,
-                height: 50,
+                ...computeEquidistantSize(
+                  { width, height },
+                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
+                ),
               };
           }
         });
@@ -226,7 +247,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
       }
       return -999;
     },
-    [rtcEngine]
+    [canvasSize.height, canvasSize.width, rtcEngine]
   );
 
   useMount(() => {

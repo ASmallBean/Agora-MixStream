@@ -4,3 +4,7 @@ export enum ChannelEnum {
   QuitChannel = 'QuitChannel',
   PlayChannel = 'PlayChannel',
 }
+
+export enum ProcessChannel {
+  Close = 'Close',
+}

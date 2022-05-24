@@ -45,7 +45,7 @@ class WhiteboardBrowserWindow {
     });
 
     this.browserWindow.on('closed', () => {
-      this.destroyWhiteboardWindow();
+      this.destroyWindow();
     });
 
     this.browserWindow.loadURL(url);
@@ -53,7 +53,8 @@ class WhiteboardBrowserWindow {
     return this.browserWindow;
   }
 
-  public destroyWhiteboardWindow() {
+  public destroyWindow() {
+    this.browserWindow && this.browserWindow.close();
     this.browserWindow = null;
   }
 }

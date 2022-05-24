@@ -44,10 +44,20 @@ export class ProfileService {
     if (!session) {
       throw new Error('Session not found');
     }
+
+    if (
+      role === RoleType.HOST &&
+      session.hostId !== '' &&
+      session.hostId !== username
+    ) {
+      throw new Error('The channel host user is full');
+    }
+
     const streams = await this.createStreams(
       session.channel,
       session.expiredAt,
     );
+
     const signals = await this.createSignals(
       session.channel,
       session.expiredAt,
@@ -142,7 +152,15 @@ export class ProfileService {
       throw new Error('Profile not found');
     }
     if (profile.role === RoleType.HOST) {
-      await this.sessionService.hostCheckIn(sessionId, isIn);
+      if (isIn) {
+        const session = await this.sessionService.findSession(sessionId);
+        if (session.hostId !== '' && session.hostId !== profile.username) {
+          throw new Error('The channel host user is full');
+        }
+        await this.sessionService.updateHost(sessionId, profile.username);
+      } else {
+        await this.sessionService.updateHost(sessionId, '');
+      }
     }
     profile.lastSeen = new Date();
     await this.profileRepository.save(profile);

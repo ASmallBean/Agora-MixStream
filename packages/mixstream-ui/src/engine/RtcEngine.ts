@@ -132,14 +132,6 @@ export class RtcEngine extends EventEmitter {
     return code;
   }
 
-  release() {
-    const code = this._rtcEngine.release();
-    if (code !== 0) {
-      throw new Error(`Failed to release rtc engine with error code: ${code}`);
-    }
-    return code;
-  }
-
   setupLocalView(type: number, deviceId: number, attachEl: HTMLElement) {
     const code = this._rtcEngine.setupLocalView(type, deviceId, attachEl, { append: false });
     if (code !== 0) {

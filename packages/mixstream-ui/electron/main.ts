@@ -35,6 +35,10 @@ async function createWindow() {
   } else {
     win.loadFile('build/index.html');
   }
+  win.on('close', (e) => {
+    e.preventDefault();
+    win.webContents.send('process_close');
+  });
   return win;
 }
 

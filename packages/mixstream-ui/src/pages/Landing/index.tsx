@@ -1,4 +1,4 @@
-import { Button, Form, Input, Select } from 'antd';
+import { Button, Form, Input, message, Select } from 'antd';
 import { RoleType } from 'mixstream-shared';
 import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router-dom';
@@ -18,13 +18,23 @@ const Landing = () => {
     setFromValue(value);
     const { channel, username, role } = value;
 
+    const sessionRequest = await createSession({ channel });
+    if (sessionRequest.status >= 400) {
+      message.error(sessionRequest.statusText);
+      return;
+    }
     const {
       data: { id: sessionId },
-    } = await createSession({ channel });
+    } = sessionRequest;
 
+    const profileRequest = await createProfile(sessionId, { username, role });
+    if (profileRequest.status >= 400) {
+      message.error(sessionRequest.statusText);
+      return;
+    }
     const {
       data: { id: profileId },
-    } = await createProfile(sessionId, { username, role });
+    } = profileRequest;
 
     switch (role) {
       case RoleType.HOST:

@@ -31,7 +31,6 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
       return;
     }
     const handle = () => {
-      rtcEngine.leaveChannel();
       navigator('/');
     };
     rtcEngine.on(ChannelEnum.QuitChannel, handle);
@@ -41,8 +40,7 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   }, [navigator, rtcEngine]);
 
   useUnmount(async () => {
-    await rtcEngine?.leaveChannel();
-    await rtcEngine?.release();
+    rtcEngine?.leaveTransCoderChannel();
   });
 
   return (

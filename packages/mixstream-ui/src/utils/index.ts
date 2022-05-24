@@ -1,3 +1,4 @@
+export * from './closeListener';
 export * from './os';
 export * from './request';
 

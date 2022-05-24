@@ -7,7 +7,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { Profile, Session } from 'mixstream-shared';
+import { Session } from 'mixstream-shared';
 import { SessionService } from './session.service';
 
 @Controller('session')
@@ -18,11 +18,9 @@ export class SessionController {
   ) {}
 
   @Post('/')
-  createSession(
-    @Body() body: Pick<Session, 'channel'> & Pick<Profile, 'role'>,
-  ) {
+  createSession(@Body() body: Pick<Session, 'channel'>) {
     Logger.debug(`SessionController.createSession: ${JSON.stringify(body)}`);
-    return this.services.createSession(body.channel, body.role);
+    return this.services.createSession(body.channel);
   }
 
   @Get('/:id')

@@ -22,8 +22,8 @@ export class SessionEntity implements Session {
   @Column()
   wUUID: string;
 
-  @Column({ default: false })
-  hostCheckIn: boolean;
+  @Column({ default: '' })
+  hostId: string;
 
   @Column({ type: 'timestamp' })
   expiredAt: Date;

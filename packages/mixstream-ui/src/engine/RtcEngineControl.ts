@@ -110,11 +110,17 @@ export class RtcEngineControl extends RtcEngine {
     if (code !== 0) {
       return code;
     }
-    code = this.leaveChannel();
-    if (code !== 0) {
-      return code;
+    return this.leaveTransCoderChannel();
+  }
+
+  leaveTransCoderChannel() {
+    if (!this._isJoinedChannel) {
+      return 0;
     }
-    this._isJoinedChannel = false;
+    const code = this.leaveChannel();
+    if (code === 0) {
+      this._isJoinedChannel = false;
+    }
     return code;
   }
 

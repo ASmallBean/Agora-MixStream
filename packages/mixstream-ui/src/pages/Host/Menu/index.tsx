@@ -1,9 +1,11 @@
 import { Button, Dropdown, Menu, Select } from 'antd';
 import _ from 'lodash';
+import { useRef } from 'react';
 import { AiOutlineAudio, AiOutlineAudioMuted, AiOutlinePauseCircle, AiOutlinePlayCircle } from 'react-icons/ai';
 import { BsBoxArrowLeft } from 'react-icons/bs';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
+import { useUnmount } from 'react-use';
 import { bitrateMap, VIDEO_SOURCE_TYPE } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useStream } from '../../../hooks/stream';
@@ -24,7 +26,7 @@ const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: v 
 const HostMenu = () => {
   const intl = useIntl();
   const { rtcEngine } = useEngine();
-
+  const whiteboardRef = useRef<WhiteboardBrowserWindow | null>(null);
   const {
     audio,
     setAudio,
@@ -71,6 +73,12 @@ const HostMenu = () => {
     />
   );
 
+  useUnmount(() => {
+    if (whiteboardRef.current) {
+      whiteboardRef.current.destroyWindow();
+    }
+  });
+
   return (
     <div className="host-menu">
       <Dropdown overlay={menu} placement="bottomLeft">
@@ -80,9 +88,9 @@ const HostMenu = () => {
         disabled={whiteboard}
         onClick={_.throttle(async () => {
           if (sessionId && profileId) {
-            const w = WhiteboardBrowserWindow.singleton();
             const pathname = `/#/session/${sessionId}/profile/${profileId}/whiteboard`;
-            w.open(hostPath() + pathname).then((browserWindow) => {
+            whiteboardRef.current = WhiteboardBrowserWindow.singleton();
+            whiteboardRef.current.open(hostPath() + pathname).then((browserWindow) => {
               browserWindow.on('closed', () => {
                 setWhiteboard(false);
                 removeStream(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY);

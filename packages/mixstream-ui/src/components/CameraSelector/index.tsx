@@ -72,10 +72,6 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       }
       form.submit();
       return;
-    } else {
-      if (freeCameraCaptureSource !== null) {
-        rtcEngine?.stopCameraCapture(freeCameraCaptureSource);
-      }
     }
   }, [form, freeCameraCaptureSource, rtcEngine, visible]);
 

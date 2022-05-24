@@ -49,8 +49,8 @@ const WhiteboardMain = () => {
   }, [profile]);
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <Fastboard app={app} />
+    <div style={{ width: '100vw', height: 'calc(100vh - 32px)', marginTop: 32 }}>
+      <Fastboard app={app} config={{ toolbar: { apps: { enable: false } } }} />
     </div>
   );
 };

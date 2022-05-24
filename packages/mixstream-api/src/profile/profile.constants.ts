@@ -2,7 +2,6 @@ export const PROFILE_IN_SESSION_SELECT = {
   id: true,
   username: true,
   role: true,
-  rdcStatus: true,
   aspectRatio: true,
   markable: true,
   createdAt: true,

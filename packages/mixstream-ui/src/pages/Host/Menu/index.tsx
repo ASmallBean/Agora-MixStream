@@ -6,10 +6,7 @@ import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 import { bitrateMap, VIDEO_SOURCE_TYPE } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
-import { useProfile } from '../../../hooks/profile';
-import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
-import { findVideoStreamFromProfile } from '../../../services/api';
 import { hostPath } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
@@ -19,6 +16,7 @@ export enum MenuEventEnum {
   CreateCameraLayer, // 创建摄像头图层
   CreateScreenLayer, // 创建屏幕图层
   CreateWhiteboardLayer, // 创建白板图层
+  Play, // 创建白板图层
 }
 
 const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: bitrateMap[v] }));
@@ -26,13 +24,11 @@ const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: bi
 const HostMenu = () => {
   const intl = useIntl();
   const { rtcEngine } = useEngine();
-  const { profile } = useProfile();
-  const { channel } = useSession();
+
   const {
     audio,
     setAudio,
     play,
-    setPlay,
     resolution,
     updateResolution,
     whiteboard,
@@ -41,7 +37,6 @@ const HostMenu = () => {
     shareScreen,
     shareWhiteboard,
     removeStream,
-    streams,
   } = useStream();
   const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
 
@@ -132,26 +127,10 @@ const HostMenu = () => {
       </Button>
       <Button
         title={intl.formatMessage({
-          id: !play ? 'host.menu.play.off' : 'host.menu.play.on',
+          id: play ? 'host.menu.play.off' : 'host.menu.play.on',
         })}
         onClick={_.throttle(async () => {
-          if (rtcEngine) {
-            let code;
-            if (play) {
-              code = rtcEngine.stop();
-              // 停止推流
-            } else {
-              const stream = findVideoStreamFromProfile(profile);
-              if (!stream || !channel) {
-                return;
-              }
-              const { token, uid } = stream;
-              code = rtcEngine.play({ token, channel, uid }, streams);
-            }
-            if (code === 0) {
-              setPlay((pre) => !pre);
-            }
-          }
+          rtcEngine?.emit(ChannelEnum.PlayChannel, { play: !play });
         }, 200)}
       >
         {play ? <AiOutlinePauseCircle size={22} /> : <AiOutlinePlayCircle size={22} />}

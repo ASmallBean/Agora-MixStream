@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as dayjs from 'dayjs';
 import {
   Profile,
+  RoleType,
   SignalCommand,
   SignalKind,
   StreamKind,
@@ -139,6 +140,9 @@ export class ProfileService {
     });
     if (!profile) {
       throw new Error('Profile not found');
+    }
+    if (profile.role === RoleType.HOST) {
+      await this.sessionService.hostCheckIn(sessionId, isIn);
     }
     profile.lastSeen = new Date();
     await this.profileRepository.save(profile);

@@ -117,7 +117,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
         setLayout((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
           switch (
-            sourceType // 这个版本通过 VIDEO_SOURCE_TYPE 判断是第一个摄像头还是第二个
+            sourceType // 这个版本通过 SOURCE_TYPE 判断是第一个摄像头还是第二个
           ) {
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY: // 左边
               return {
@@ -152,7 +152,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
           return code;
         }
         const dID = sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1;
-        return rtcEngine.setupLocalViewWithStartPreview(0, dID, dom, sourceType);
+        return rtcEngine.setupLocalView(0, dID, dom);
       }
       return -999;
     },
@@ -175,7 +175,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
         setLayout((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
           switch (
-            sourceType // 这个版本通过 VIDEO_SOURCE_TYPE判断是白板还是窗口
+            sourceType // 这个版本通过 SOURCE_TYPE 判断是白板还是窗口
           ) {
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY: // 窗口 满屏
               return {
@@ -222,7 +222,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
           return code;
         }
         const dID = sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY ? 0 : 1;
-        return rtcEngine.setupLocalViewWithStartPreview(3, dID, dom, sourceType);
+        return rtcEngine.setupLocalView(3, dID, dom);
       }
       return -999;
     },

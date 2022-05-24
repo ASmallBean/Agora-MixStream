@@ -80,6 +80,7 @@ export class RtcEngine extends EventEmitter {
     this._isJoined = true;
     return code;
   }
+
   joinChannelWithMediaOptions(token: string, channelId: string, userId: number, options: ChannelMediaOptions): number {
     if (this._isJoined) {
       return 0;
@@ -161,22 +162,6 @@ export class RtcEngine extends EventEmitter {
     const code = this._rtcEngine.setupLocalView(type, deviceId, attachEl, { append: false });
     if (code !== 0) {
       throw new Error(`Failed to setupLocalView with error code: ${code}`);
-    }
-    return code;
-  }
-
-  startPreview(sourceType: VIDEO_SOURCE_TYPE) {
-    const code = this._rtcEngine.startPreview(sourceType);
-    if (code !== 0) {
-      throw new Error(`Failed to startPreview with error code: ${code}`);
-    }
-    return code;
-  }
-
-  stopPreview(sourceType: VIDEO_SOURCE_TYPE) {
-    const code = this._rtcEngine.stopPreview(sourceType);
-    if (code !== 0) {
-      throw new Error(`Failed to stopPreview with error code: ${code}`);
     }
     return code;
   }

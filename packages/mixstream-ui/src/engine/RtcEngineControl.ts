@@ -8,6 +8,7 @@ import { RtcEngine } from './RtcEngine';
 import {
   DEGRADATION_PREFERENCE,
   DisplayInfo,
+  MEDIA_SOURCE_TYPE,
   ORIENTATION_MODE,
   VIDEO_MIRROR_MODE_TYPE,
   VIDEO_SOURCE_TYPE,
@@ -114,7 +115,12 @@ export class RtcEngineControl extends RtcEngine {
 
   private _isJoinedChannel = false;
 
-  play(channelInfo: ChannelInfo, layers: LayerConfig[], options?: Partial<VideoEncoderConfiguration>) {
+  play(
+    channelInfo: ChannelInfo,
+    layers: LayerConfig[],
+    dom: HTMLDivElement,
+    options?: Partial<VideoEncoderConfiguration>
+  ) {
     const { token, channel, uid } = channelInfo;
     console.log('🚀 ~ file: RtcEngineControl.ts ~ line 86 ~ RtcEngineControl ~ play ~ channelInfo', channelInfo);
     const config = this.layer2TranscodingConfig(layers, options);
@@ -122,6 +128,7 @@ export class RtcEngineControl extends RtcEngine {
     if (code !== 0) {
       return;
     }
+    this.setupLocalView(4, 0, dom);
     if (this._isJoinedChannel) {
       return code;
     }
@@ -132,15 +139,10 @@ export class RtcEngineControl extends RtcEngine {
   }
 
   joinChannelWithPublishTrancodedVideoTrack(token: string, channel: string, uid: number) {
-    // let code = this.joinChannel(token, channel, uid);
-    let code = this.joinChannelWithMediaOptions(token, channel, uid, joinChannelOptions);
-    // let code = this.joinChannelEx(token, { channelId: channel, localUid: uid }, joinChannelOptions);
-    console.log('🚀 ~ file: joinChannel', code);
-    if (code !== 0) {
-      return code;
+    const code = this.joinChannelWithMediaOptions(token, channel, uid, joinChannelOptions);
+    if (code === 0) {
+      this._isJoinedChannel = true;
     }
-    // code = this.updateChannelMediaOptions(joinChannelOptions);
-    this._isJoinedChannel = true;
     return code;
   }
 
@@ -181,14 +183,6 @@ export class RtcEngineControl extends RtcEngine {
     };
   }
 
-  setupLocalViewWithStartPreview(type: number, deviceId: number, attachEl: HTMLElement, sourceType: VIDEO_SOURCE_TYPE) {
-    const code = this.setupLocalView(type, deviceId, attachEl);
-    if (code !== 0) {
-      return code;
-    }
-    return this.startPreview(sourceType);
-  }
-
   layer2TranscodingConfig(
     layers: LayerConfig[],
     options?: Partial<VideoEncoderConfiguration>
@@ -197,7 +191,7 @@ export class RtcEngineControl extends RtcEngine {
     const outputStreams = layers.map((v) => {
       const { sourceType, x, y, width, height, zOrder } = v;
       return {
-        sourceType,
+        sourceType: sourceTypeMap[sourceType],
         x,
         y,
         width,
@@ -228,3 +222,10 @@ export class RtcEngineControl extends RtcEngine {
     return result;
   }
 }
+
+const sourceTypeMap: { [key: number]: number } = {
+  [VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY]: MEDIA_SOURCE_TYPE.PRIMARY_CAMERA_SOURCE,
+  [VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY]: MEDIA_SOURCE_TYPE.SECONDARY_CAMERA_SOURCE,
+  [VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY]: MEDIA_SOURCE_TYPE.PRIMARY_SCREEN_SOURCE,
+  [VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY]: MEDIA_SOURCE_TYPE.SECONDARY_SCREEN_SOURCE,
+};

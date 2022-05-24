@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as dayjs from 'dayjs';
-import { SignalKind } from 'mixstream-shared';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { RoleType, SignalKind } from 'mixstream-shared';
+import { MoreThanOrEqual, Repository, UpdateResult } from 'typeorm';
 import { SignalService } from '../signal/signal.service';
 import { WhiteboardService } from '../whiteboard/whiteboard.service';
 import { SessionEntity } from './session.entity';
@@ -23,12 +23,16 @@ export class SessionService {
 
   async createSession(
     channel: string,
+    role: RoleType,
   ): Promise<Omit<SessionEntity, 'robotId' | 'wUUID'>> {
     const [sessions, count] = await this.repository.findAndCount({
       where: { channel, expiredAt: MoreThanOrEqual(new Date()) },
       select: ['id', 'channel', 'expiredAt', 'createdAt'],
     });
     if (count === 1) {
+      if (sessions[0].hostCheckIn && role === RoleType.HOST) {
+        throw new Error('There have been the host account to log in');
+      }
       return sessions[0];
     }
     const expired = Number(
@@ -62,6 +66,26 @@ export class SessionService {
       throw new Error('Session not found');
     }
     return session;
+  }
+
+  async hostCheckIn(id: string, isIn: boolean): Promise<UpdateResult> {
+    if (isIn) {
+      const isCheckIn = await this.isHostCheckIn(id);
+      if (isCheckIn) {
+        throw new Error('There have been the host account to log in');
+      }
+    }
+    return await this.repository.update(id, {
+      hostCheckIn: isIn,
+    });
+  }
+
+  async isHostCheckIn(id: string): Promise<boolean> {
+    const session = await this.repository.findOne({ where: { id } });
+    if (!session) {
+      throw new Error('Session not found');
+    }
+    return session.hostCheckIn;
   }
 
   async getRobotId(id: string): Promise<string> {

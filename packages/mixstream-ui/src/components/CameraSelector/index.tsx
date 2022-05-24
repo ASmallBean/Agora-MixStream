@@ -2,7 +2,7 @@ import { Form, Modal, Select } from 'antd';
 import FormItem from 'antd/lib/form/FormItem';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { resolutionMap, RtcEngineEvents, VideoDeviceInfo } from '../../engine';
+import { resolutionMap, RtcEngineEvents, VideoDeviceInfo, VIDEO_SOURCE_TYPE } from '../../engine';
 import { useEngine } from '../../hooks/engine';
 import { useStream } from '../../hooks/stream';
 import './index.css';
@@ -49,11 +49,10 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       const value = await form.validateFields();
       const { deviceId, resolution } = value;
       rtcEngine.startCameraCapture(freeCameraCaptureSource, deviceId, resolutionMap[resolution]);
-      rtcEngine.setupLocalViewWithStartPreview(
+      rtcEngine.setupLocalView(
         0,
-        freeCameraCaptureSource === 0 ? 0 : 1,
-        domRef.current,
-        freeCameraCaptureSource
+        freeCameraCaptureSource === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY ? 0 : 1,
+        domRef.current
       );
     }
   }, [form, freeCameraCaptureSource, rtcEngine]);

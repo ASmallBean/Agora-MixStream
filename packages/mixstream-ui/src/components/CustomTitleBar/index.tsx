@@ -52,19 +52,6 @@ const CustomTitleBar: FC<CustomTitleBarProps> = ({ title, visible = true }) => {
         maximized={maximized}
         title={title}
         theme={them}
-        menu={[
-          {
-            id: 'new',
-            label: 'New',
-            disabled: true,
-            hidden: false,
-            submenu: [],
-            type: 'normal',
-            click: (menu, browser, e) => {
-              console.log(1);
-            },
-          },
-        ]}
       ></TitleBar>
     </div>
   );

@@ -24,7 +24,6 @@ export const useCheckInOut = () => {
         navigator('/');
       });
     const handle = () => {
-      console.log(111);
       checkInOut(sessionId, profileId, false);
     };
     addCloseHandle('close', handle);

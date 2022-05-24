@@ -22,7 +22,6 @@ module.exports = override(
         module: /@netless\/window-manager/,
       },
     ];
-    console.log(config.resolve)
     return config;
   },
   addWebpackExternals([

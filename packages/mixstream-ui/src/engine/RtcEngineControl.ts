@@ -172,7 +172,7 @@ export class RtcEngineControl extends RtcEngine {
     layers: LayerConfig[],
     options?: Partial<VideoEncoderConfiguration>
   ): LocalTranscoderConfiguration {
-    console.log('🚀 ~ file: RtcEngineControl.ts ~ line 161 ~ RtcEngineControl ~ layers', layers);
+    console.log('🚀 ~ layers', layers);
     const outputStreams = layers.map((v) => {
       const { sourceType, x, y, width, height, zOrder } = v;
       return {

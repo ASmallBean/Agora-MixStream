@@ -236,7 +236,6 @@ export class RtcEngine extends EventEmitter {
   }
 
   stopScreenCapture(type: VIDEO_SOURCE_TYPE): number {
-    console.log('🚀 ~ stopScreenCapture');
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY;
     const code = isPrimary ? this._rtcEngine.stopPrimaryScreenCapture() : this._rtcEngine.stopSecondaryScreenCapture();
     if (code !== 0) {

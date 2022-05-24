@@ -41,6 +41,21 @@ export interface LayerConfig {
   };
 }
 
+interface Size {
+  width: number;
+  height: number;
+}
+interface Rect extends Size {
+  x: number;
+  y: number;
+}
+
+interface Layout extends Size {
+  left: number;
+  top: number;
+  zIndex: number;
+}
+
 interface LayerProps {
   className?: string;
   data: LayerConfig;
@@ -55,6 +70,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   const domRef = useRef<HTMLDivElement>(null);
   const { updateStreams, resolution } = useStream();
   const { width: windowWidth } = useWindowSize();
+
   const canvasSize = useMemo(() => {
     return {
       width: windowWidth * 0.8, // 80vw
@@ -62,13 +78,23 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     };
   }, [windowWidth]);
 
-  const [layout, setLayout] = useState({
+  const canvasSizeRef = useRef({ ...canvasSize });
+
+  const [layout, setLayout] = useState<Layout>({
     width: canvasSize.width,
     height: canvasSize.height,
     left: 0,
     top: 0,
     zIndex: 100,
   });
+
+  useEffect(() => {
+    setLayout((pre) => {
+      const result = computeEquidistantLayout(canvasSizeRef.current, canvasSize, pre);
+      canvasSizeRef.current = { ...canvasSize };
+      return result;
+    });
+  }, [canvasSize]);
 
   // 换算图层在合图的时候的布局数据
   useEffect(() => {
@@ -381,4 +407,25 @@ function computeEquidistantSize(
     result.height = maxWidth / ratio;
   }
   return result;
+}
+
+function computeEquidistantLayout(origin: Size, target: Size, layout: Layout) {
+  const { width: targetWidth, height: targetHeight } = target;
+  const { width: originWidth, height: originHeight } = origin;
+  const { width: layoutWidth, height: layoutHeight, left: layoutLeft, top: layoutTop, zIndex } = layout;
+  const left = computeEquidistant(originWidth, targetWidth, layoutLeft);
+  const top = computeEquidistant(originHeight, targetHeight, layoutTop);
+  const width = computeEquidistant(originWidth, targetWidth, layoutWidth);
+  const height = computeEquidistant(originHeight, targetHeight, layoutHeight);
+  return {
+    left,
+    top,
+    width,
+    height,
+    zIndex,
+  };
+}
+
+function computeEquidistant(origin: number, target: number, current: number) {
+  return (target * current) / origin;
 }

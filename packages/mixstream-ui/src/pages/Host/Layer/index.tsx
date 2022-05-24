@@ -62,7 +62,6 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     };
   }, [windowWidth]);
 
-  // 布局存储的是百分比
   const [layout, setLayout] = useState({
     width: canvasSize.width,
     height: canvasSize.height,
@@ -70,18 +69,6 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     top: 0,
     zIndex: 100,
   });
-
-  const styles = useMemo(() => {
-    // const { width, height, left, top, zIndex } = layout;
-    // return {
-    //   width: `${width}%`,
-    //   height: `${height}%`,
-    //   left: `${left}%`,
-    //   top: `${top}%`,
-    //   zIndex,
-    // };
-    return layout;
-  }, [layout]);
 
   // 换算图层在合图的时候的布局数据
   useEffect(() => {
@@ -273,7 +260,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   return (
     <div
       className={`layer container ${className ? className : ''}`}
-      style={styles}
+      style={layout}
       onContextMenu={handleContextMenu}
       ref={domRef}
     >

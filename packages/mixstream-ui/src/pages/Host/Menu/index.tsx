@@ -19,7 +19,7 @@ export enum MenuEventEnum {
   Play, // 创建白板图层
 }
 
-const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: bitrateMap[v] }));
+const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: v }));
 
 const HostMenu = () => {
   const intl = useIntl();

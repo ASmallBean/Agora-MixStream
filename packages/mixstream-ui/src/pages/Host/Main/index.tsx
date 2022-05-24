@@ -1,5 +1,12 @@
 import { useEffect } from 'react';
-import { DisplayInfo, ShareScreenType, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../engine';
+import {
+  bitrateMap,
+  DisplayInfo,
+  getResolutionSize,
+  ShareScreenType,
+  VIDEO_SOURCE_TYPE,
+  WindowInfo,
+} from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
@@ -21,7 +28,7 @@ const HostMain = () => {
   const { rtcEngine } = useEngine();
   const { openModal: openShareCameraModal } = useShareCamera();
   const { openModal: openShareScreenModal } = useShareScreen();
-  const { streams, addStream, removeStream, setPlay } = useStream();
+  const { streams, addStream, removeStream, setPlay, resolution } = useStream();
   const { profile } = useProfile();
   const { channel } = useSession();
 
@@ -87,13 +94,13 @@ const HostMain = () => {
       if (rtcEngine) {
         let code;
         if (play) {
-          console.log('🚀 ~ file: index.tsx ~ line 90 ~ handle ~ play', play);
           const stream = findVideoStreamFromProfile(profile);
           if (!stream || !channel) {
             return;
           }
           const { token, uid } = stream;
-          code = rtcEngine.play({ token, channel, uid }, streams);
+          const options = getResolutionSize(resolution);
+          code = rtcEngine.play({ token, channel, uid }, streams, { bitrate: bitrateMap[resolution], ...options });
         } else {
           // 停止推流
           code = rtcEngine.stop();
@@ -107,7 +114,7 @@ const HostMain = () => {
     return () => {
       rtcEngine?.off(ChannelEnum.PlayChannel, handle);
     };
-  }, [channel, profile, rtcEngine, setPlay, streams]);
+  }, [channel, profile, resolution, rtcEngine, setPlay, streams]);
 
   return (
     <div className="hostMain">

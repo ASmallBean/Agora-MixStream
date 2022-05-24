@@ -173,16 +173,17 @@ export class RtcEngineControl extends RtcEngine {
         mirror: true,
       };
     });
+
     const result: LocalTranscoderConfiguration = {
       streamCount: outputStreams.length,
       videoInputStreams: outputStreams,
       videoOutputConfiguration: {
         codecType: 1,
+        bitrate: 2080,
         width: 1920,
         height: 1080,
         frameRate: 15,
-        bitrate: 2080,
-        minBitrate: 2080,
+        minBitrate: 520,
         orientationMode: ORIENTATION_MODE.ORIENTATION_MODE_ADAPTIVE,
         degradationPreference: DEGRADATION_PREFERENCE.MAINTAIN_QUALITY,
         mirrorMode: VIDEO_MIRROR_MODE_TYPE.VIDEO_MIRROR_MODE_AUTO,

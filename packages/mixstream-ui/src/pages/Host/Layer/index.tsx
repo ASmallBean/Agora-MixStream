@@ -158,7 +158,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
       }
       return -999;
     },
-    [rtcEngine]
+    [canvasSize.height, canvasSize.width, rtcEngine]
   );
 
   // 渲染共享屏幕
@@ -196,7 +196,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                   { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
                 ),
                 left: 0,
-                top: 50,
+                top: canvasSize.width * 0.5,
                 zIndex: 50,
               };
             default:

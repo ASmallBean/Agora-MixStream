@@ -7,7 +7,7 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const [streams, setStreams] = useState<LayerConfig[]>([]);
   const [resolution, setResolution] = useState(bitrates[0]);
   const [play, setPlay] = useState(false);
-  const [audio, setAudio] = useState(false);
+  const [audio, setAudio] = useState(true);
   const [whiteboard, setWhiteboard] = useState(false);
 
   const shareScreen = useMemo(() => {

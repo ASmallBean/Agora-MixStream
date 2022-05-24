@@ -164,7 +164,9 @@ export class RtcEngine extends EventEmitter {
     const { audio, video } = options;
     let code;
     if (audio !== undefined) {
-      code = this._rtcEngine.enableLocalAudio(!!audio);
+      console.log('🚀 ~ file: RtcEngine.ts ~ line 167 ~ RtcEngine ~ publishOrUnpublish ~ audio', audio);
+      code = this._rtcEngine.enableLocalAudio(audio);
+      audio ? this._rtcEngine.enableAudio() : this._rtcEngine.disableAudio();
       if (code !== 0) {
         throw new Error(`Failed to enableLocalAudio with error code: ${code}`);
       }

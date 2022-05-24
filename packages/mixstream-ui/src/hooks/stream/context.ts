@@ -26,7 +26,7 @@ export interface StreamContextProps {
 export const StreamContext = createContext<StreamContextProps>({
   play: false,
   setPlay: () => {},
-  audio: false,
+  audio: true,
   setAudio: () => {},
   whiteboard: false,
   setWhiteboard: () => {},

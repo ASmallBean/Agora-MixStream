@@ -123,7 +123,7 @@ const HostMenu = () => {
           }
         }, 200)}
       >
-        {audio ? <AiOutlineAudioMuted size={20} /> : <AiOutlineAudio size={20} />}
+        {audio ? <AiOutlineAudio size={20} /> : <AiOutlineAudioMuted size={20} />}
       </Button>
       <Button
         title={intl.formatMessage({

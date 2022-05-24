@@ -91,11 +91,13 @@ export class RtcEngineControl extends RtcEngine {
       return -999;
     }
     const { token, channel, uid } = channelInfo;
+
     const config = this.layer2TranscodingConfig(layers, options);
     let code = this.startLocalVideoTranscoder(config);
     if (code !== 0) {
       return;
     }
+
     code = this.joinChannelWithMediaOptions(token, channel, uid, joinChannelOptions);
     if (code === 0) {
       this._isJoinedChannel = true;
@@ -114,6 +116,13 @@ export class RtcEngineControl extends RtcEngine {
     }
     this._isJoinedChannel = false;
     return code;
+  }
+
+  updateLocalTranscoderOutVideoConfig(layers: LayerConfig[], options?: Partial<VideoEncoderConfiguration>) {
+    if (this._isJoinedChannel) {
+      const config = this.layer2TranscodingConfig(layers, options);
+      this.updateLocalTranscoderConfiguration(config);
+    }
   }
 
   async getScreenCaptureConfigByDisplay(data: DisplayInfo): Promise<ScreenCaptureConfiguration> {

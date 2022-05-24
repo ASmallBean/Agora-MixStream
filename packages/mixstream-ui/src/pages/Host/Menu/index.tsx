@@ -46,7 +46,7 @@ const HostMenu = () => {
         {
           label: intl.formatMessage({ id: 'host.menu.layer.camera' }),
           key: 'camera',
-          disabled: !shareCamera,
+          disabled: !shareCamera || play,
           onClick: () => {
             rtcEngine?.emit(ChannelEnum.MenuControl, MenuEventEnum.CreateCameraLayer);
           },
@@ -54,7 +54,7 @@ const HostMenu = () => {
         {
           label: intl.formatMessage({ id: 'host.menu.layer.screen' }),
           key: 'screen',
-          disabled: !shareScreen,
+          disabled: !shareScreen || play,
           onClick: () => {
             rtcEngine?.emit(ChannelEnum.MenuControl, MenuEventEnum.CreateScreenLayer);
           },
@@ -62,7 +62,7 @@ const HostMenu = () => {
         {
           label: intl.formatMessage({ id: 'host.menu.layer.whiteboard' }),
           key: 'whiteboard',
-          disabled: !whiteboard || !shareWhiteboard,
+          disabled: !whiteboard || !shareWhiteboard || play,
           onClick: () => {
             rtcEngine?.emit(ChannelEnum.MenuControl, MenuEventEnum.CreateWhiteboardLayer);
           },

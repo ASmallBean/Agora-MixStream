@@ -222,7 +222,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                   { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
                 ),
                 left: 0,
-                top: canvasSize.width * 0.5,
+                top: canvasSize.height * 0.5,
                 zIndex: 50,
               };
             default:

@@ -28,7 +28,7 @@ const HostMain = () => {
   const { rtcEngine } = useEngine();
   const { openModal: openShareCameraModal } = useShareCamera();
   const { openModal: openShareScreenModal } = useShareScreen();
-  const { streams, addStream, removeStream, setPlay, resolution } = useStream();
+  const { streams, addStream, removeStream, setPlay, resolution, play } = useStream();
   const { profile } = useProfile();
   const { channel } = useSession();
 
@@ -115,6 +115,13 @@ const HostMain = () => {
       rtcEngine?.off(ChannelEnum.PlayChannel, handle);
     };
   }, [channel, profile, resolution, rtcEngine, setPlay, streams]);
+
+  useEffect(() => {
+    const options = getResolutionSize(resolution);
+    if (play) {
+      rtcEngine?.updateLocalTranscoderOutVideoConfig(streams, { bitrate: bitrateMap[resolution], ...options });
+    }
+  }, [play, resolution, rtcEngine, streams]);
 
   return (
     <div className="hostMain">

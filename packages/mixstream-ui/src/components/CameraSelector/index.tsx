@@ -62,10 +62,10 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
     if (!rtcEngine) {
       return;
     }
-    const list = rtcEngine.getVideoDevices();
-    setDevices(list);
     if (visible) {
-      if (list.length) {
+      const list = rtcEngine.getVideoDevices();
+      if (list && list.length) {
+        setDevices(list);
         const deviceId = form.getFieldValue('deviceId');
         if (deviceId === '' || !list.some((v) => v.deviceid === deviceId)) {
           form.setFieldsValue({ deviceId: list[0].deviceid, resolution: resolutionOptions[0].value });

@@ -1,7 +1,7 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
 import { FC, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
-import { useMount, useWindowSize } from 'react-use';
+import { useMount } from 'react-use';
 import {
   DisplayInfo,
   getResolutionSize,
@@ -53,8 +53,6 @@ interface LayerProps {
 const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   const uid = useId();
   const domRef = useRef<HTMLDivElement>(null);
-  const { width: windowWidth } = useWindowSize();
-  console.log('🚀 ~ file: index.tsx ~ line 57 ~ windowWidth', windowWidth);
   const { updateStreams, resolution } = useStream();
 
   // 布局存储的是百分比
@@ -65,6 +63,17 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     top: 0,
     zIndex: 100,
   });
+
+  const styles = useMemo(() => {
+    const { width, height, left, top, zIndex } = layout;
+    return {
+      width: `${width}%`,
+      height: `${height}%`,
+      left: `${left}%`,
+      top: `${top}%`,
+      zIndex,
+    };
+  }, [layout]);
 
   // 换算图层在合图的时候的布局数据
   useEffect(() => {
@@ -116,7 +125,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 height: 20,
                 left: 80,
                 top: 0,
-                zIndex: 101,
+                zIndex: 61,
               };
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY: // 右边
               return {
@@ -124,7 +133,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 height: 20,
                 left: 0,
                 top: 0,
-                zIndex: 101,
+                zIndex: 60,
               };
             default:
               return {
@@ -174,7 +183,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 height: 100,
                 left: 0,
                 top: 0,
-                zIndex: 98,
+                zIndex: 40,
               };
             case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY: // 白板
               return {
@@ -182,7 +191,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
                 height: 50,
                 left: 0,
                 top: 50,
-                zIndex: 99,
+                zIndex: 50,
               };
             default:
               return {
@@ -240,17 +249,6 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     [data.sourceType, remove]
   );
 
-  const styles = useMemo(() => {
-    const { width, height, left, top, zIndex } = layout;
-    return {
-      width: `${width}%`,
-      height: `${height}%`,
-      left: `${left}%`,
-      top: `${top}%`,
-      zIndex,
-    };
-  }, [layout]);
-
   return (
     <div
       className={`layer container ${className ? className : ''}`}
@@ -285,7 +283,7 @@ export const getLayerConfigFromDisplayInfo = (
     deviceId: '',
     frameRate: 5,
     bitrate: 0,
-    zOrder: 300,
+    zOrder: 50,
     origin: {
       width,
       height,
@@ -312,7 +310,7 @@ export const getLayerConfigFromWindowInfo = (
     deviceId: '',
     windowId: data.windowId,
     displayId: 0,
-    zOrder: 300,
+    zOrder: 50,
     frameRate: 5,
     bitrate: 0,
     origin: {
@@ -342,7 +340,7 @@ export const getLayerConfigFromMediaDeviceInfo = (
     isCaptureWindow: false,
     windowId: 0,
     displayId: 0,
-    zOrder: 300,
+    zOrder: 50,
     frameRate: 5,
     bitrate: 0,
     origin: {

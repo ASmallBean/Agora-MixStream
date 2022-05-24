@@ -64,6 +64,39 @@ export const resolutionMap: { [key: string]: Resolution } = {
 
 export const DEFAULT_RECT = { x: 0, y: 0, height: 0, width: 0 };
 
+const joinChannelOptions: any = {
+  publishCameraTrack: false,
+  publishAudioTrack: false,
+  publishScreenTrack: false,
+  publishCustomAudioTrack: false,
+  publishCustomVideoTrack: false,
+  publishEncodedVideoTrack: false,
+  publishMediaPlayerAudioTrack: false,
+  publishMediaPlayerVideoTrack: false,
+  autoSubscribeAudio: false,
+  autoSubscribeVideo: false,
+  publishTrancodedVideoTrack: true,
+  clientRoleType: 1,
+  channelProfile: 0,
+  publishMediaPlayerId: 0,
+  defaultVideoStreamType: 0,
+  enableAudioRecordingOrPlayout: true,
+  publishSecondaryCameraTrack: false,
+  publishTertiaryCameraTrack: false,
+  publishQuaternaryCameraTrack: false,
+  publishSecondaryScreenTrack: false,
+  publishCustomAudioSourceId: 0,
+  publishCustomAudioTrackEnableAec: false,
+  publishDirectCustomAudioTrack: false,
+  publishCustomAudioTrackAec: false,
+  audienceLatencyLevel: 2,
+  encodedVideoTrackOption: {
+    ccMode: 0,
+    codecType: 1,
+    targetBitrate: 2000,
+  },
+};
+
 export class RtcEngineControl extends RtcEngine {
   private static instance: RtcEngineControl;
 
@@ -83,6 +116,7 @@ export class RtcEngineControl extends RtcEngine {
 
   play(channelInfo: ChannelInfo, layers: LayerConfig[], options?: Partial<VideoEncoderConfiguration>) {
     const { token, channel, uid } = channelInfo;
+    console.log('🚀 ~ file: RtcEngineControl.ts ~ line 86 ~ RtcEngineControl ~ play ~ channelInfo', channelInfo);
     const config = this.layer2TranscodingConfig(layers, options);
     let code = this.startLocalVideoTranscoder(config);
     if (code !== 0) {
@@ -98,40 +132,16 @@ export class RtcEngineControl extends RtcEngine {
   }
 
   joinChannelWithPublishTrancodedVideoTrack(token: string, channel: string, uid: number) {
-    const code = this.joinChannel(token, channel, uid);
-    console.log('🚀 ~ file: joinChannelWithPublishTrancodedVideoTrack ~ joinChannel', code);
+    // let code = this.joinChannel(token, channel, uid);
+    let code = this.joinChannelWithMediaOptions(token, channel, uid, joinChannelOptions);
+    // let code = this.joinChannelEx(token, { channelId: channel, localUid: uid }, joinChannelOptions);
+    console.log('🚀 ~ file: joinChannel', code);
     if (code !== 0) {
       return code;
     }
-    const data: any = {
-      publishCameraTrack: false,
-      publishAudioTrack: false,
-      publishScreenTrack: false,
-      publishCustomAudioTrack: false,
-      publishCustomVideoTrack: false,
-      publishEncodedVideoTrack: false,
-      publishMediaPlayerAudioTrack: false,
-      publishMediaPlayerVideoTrack: false,
-      autoSubscribeAudio: false,
-      autoSubscribeVideo: false,
-      publishTrancodedVideoTrack: true,
-      clientRoleType: 1,
-      channelProfile: 0,
-      publishMediaPlayerId: 0,
-      defaultVideoStreamType: 0,
-      enableAudioRecordingOrPlayout: true,
-      publishSecondaryCameraTrack: false,
-      publishTertiaryCameraTrack: false,
-      publishQuaternaryCameraTrack: false,
-      publishSecondaryScreenTrack: false,
-      publishCustomAudioSourceId: 0,
-      publishCustomAudioTrackEnableAec: false,
-      publishDirectCustomAudioTrack: false,
-      publishCustomAudioTrackAec: false,
-      audienceLatencyLevel: 2,
-    };
+    // code = this.updateChannelMediaOptions(joinChannelOptions);
     this._isJoinedChannel = true;
-    return this.updateChannelMediaOptions(data);
+    return code;
   }
 
   async getScreenCaptureConfigByDisplay(data: DisplayInfo): Promise<ScreenCaptureConfiguration> {

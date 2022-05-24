@@ -115,30 +115,24 @@ export class RtcEngineControl extends RtcEngine {
 
   private _isJoinedChannel = false;
 
-  play(
-    channelInfo: ChannelInfo,
-    layers: LayerConfig[],
-    dom: HTMLDivElement,
-    options?: Partial<VideoEncoderConfiguration>
-  ) {
+  play(channelInfo: ChannelInfo, layers: LayerConfig[], options?: Partial<VideoEncoderConfiguration>) {
     const { token, channel, uid } = channelInfo;
-    console.log('🚀 ~ file: RtcEngineControl.ts ~ line 86 ~ RtcEngineControl ~ play ~ channelInfo', channelInfo);
     const config = this.layer2TranscodingConfig(layers, options);
     let code = this.startLocalVideoTranscoder(config);
     if (code !== 0) {
       return;
     }
-    this.setupLocalView(4, 0, dom);
-    if (this._isJoinedChannel) {
-      return code;
-    }
     return this.joinChannelWithPublishTrancodedVideoTrack(token, channel, uid);
   }
+
   stop() {
     return this.stopLocalVideoTranscoder();
   }
 
   joinChannelWithPublishTrancodedVideoTrack(token: string, channel: string, uid: number) {
+    if (this._isJoinedChannel) {
+      return -999;
+    }
     const code = this.joinChannelWithMediaOptions(token, channel, uid, joinChannelOptions);
     if (code === 0) {
       this._isJoinedChannel = true;

@@ -223,7 +223,20 @@ export class RtcEngine extends EventEmitter {
       : this._rtcEngine.startSecondaryCameraCapture(config);
 
     if (code !== 0) {
-      throw new Error(`Failed to camera startPrimaryCameraCapture with error code: ${code}`);
+      throw new Error(
+        `Failed to screen share ${
+          isPrimary ? 'startPrimaryCameraCapture' : 'startSecondaryCameraCapture'
+        } with error code: ${code}.`
+      );
+    }
+    return code;
+  }
+
+  stopCameraCapture(type: VIDEO_SOURCE_TYPE): number {
+    const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY;
+    const code = isPrimary ? this._rtcEngine.stopPrimaryCameraCapture() : this._rtcEngine.stopSecondaryCameraCapture();
+    if (code !== 0) {
+      throw new Error(`Failed to camera stopCameraCapture with error code: ${code}`);
     }
     return code;
   }
@@ -242,6 +255,16 @@ export class RtcEngine extends EventEmitter {
           isPrimary ? 'startPrimaryScreenCapture' : 'startSecondaryScreenCapture'
         } with error code: ${code}.`
       );
+    }
+    return code;
+  }
+
+  stopScreenCapture(type: VIDEO_SOURCE_TYPE): number {
+    console.log('🚀 ~ stopScreenCapture');
+    const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY;
+    const code = isPrimary ? this._rtcEngine.stopPrimaryScreenCapture() : this._rtcEngine.stopSecondaryScreenCapture();
+    if (code !== 0) {
+      throw new Error(`Failed to camera stopScreenCapture with error code: ${code}`);
     }
     return code;
   }

@@ -44,14 +44,14 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
     }
   };
 
-  const renderCameraHandle = useCallback(async () => {
+  const renderHandle = useCallback(async () => {
     if (domRef.current && rtcEngine && freeCameraCaptureSource !== null) {
       const value = await form.validateFields();
       const { deviceId, resolution } = value;
       rtcEngine.startCameraCapture(freeCameraCaptureSource, deviceId, resolutionMap[resolution]);
       rtcEngine.setupLocalView(
         0,
-        freeCameraCaptureSource === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY ? 0 : 1,
+        freeCameraCaptureSource === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1,
         domRef.current
       );
     }
@@ -72,8 +72,12 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       }
       form.submit();
       return;
+    } else {
+      if (freeCameraCaptureSource !== null) {
+        rtcEngine?.stopCameraCapture(freeCameraCaptureSource);
+      }
     }
-  }, [form, rtcEngine, visible]);
+  }, [form, freeCameraCaptureSource, rtcEngine, visible]);
 
   useEffect(() => {
     const handle = () => {
@@ -98,9 +102,9 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       onCancel={onCancel}
     >
       <div className="camera-container" ref={domRef}></div>
-      <Form form={form} name="camera" onFinish={renderCameraHandle}>
+      <Form form={form} name="camera" onFinish={renderHandle}>
         <FormItem label={intl.formatMessage({ id: 'modal.camera.selector.device' })} name="deviceId" {...formLayout}>
-          <Select onChange={renderCameraHandle}>
+          <Select onChange={renderHandle}>
             {devices.map((item) => {
               return (
                 <Option key={item.deviceid} value={item.deviceid}>
@@ -115,7 +119,7 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
           name="resolution"
           {...formLayout}
         >
-          <Select onChange={renderCameraHandle}>
+          <Select onChange={renderHandle}>
             {resolutionOptions.map((item) => {
               return (
                 <Option key={item.value} value={item.value}>

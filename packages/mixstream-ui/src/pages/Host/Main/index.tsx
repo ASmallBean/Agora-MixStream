@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { DisplayInfo, ShareScreenType, VIDEO_SOURCE_TYPE, WindowInfo } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useProfile } from '../../../hooks/profile';
@@ -24,7 +24,7 @@ const HostMain = () => {
   const { streams, addStream, removeStream, setPlay } = useStream();
   const { profile } = useProfile();
   const { channel } = useSession();
-  const previewRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!rtcEngine) {
       return;
@@ -84,7 +84,7 @@ const HostMain = () => {
   useEffect(() => {
     const handle = (data: { play: boolean }) => {
       const { play } = data;
-      if (rtcEngine && previewRef.current) {
+      if (rtcEngine) {
         let code;
         if (play) {
           console.log('🚀 ~ file: index.tsx ~ line 90 ~ handle ~ play', play);
@@ -93,7 +93,7 @@ const HostMain = () => {
             return;
           }
           const { token, uid } = stream;
-          code = rtcEngine.play({ token, channel, uid }, streams, previewRef.current);
+          code = rtcEngine.play({ token, channel, uid }, streams);
         } else {
           // 停止推流
           code = rtcEngine.stop();
@@ -110,14 +110,11 @@ const HostMain = () => {
   }, [channel, profile, rtcEngine, setPlay, streams]);
 
   return (
-    <div>
-      <div className="hostMain">
-        {streams.map((v, i) => {
-          const key = `${v.deviceId}${v.windowId}${v.sourceType}${v.displayId}${i}`;
-          return <Layer key={key} data={v} rtcEngine={rtcEngine} remove={removeStream}></Layer>;
-        })}
-      </div>
-      <div style={{ width: 1000, height: 500 }} ref={previewRef}></div>
+    <div className="hostMain">
+      {streams.map((v, i) => {
+        const key = `${v.deviceId}${v.windowId}${v.sourceType}${v.displayId}${i}`;
+        return <Layer key={key} data={v} rtcEngine={rtcEngine} remove={removeStream}></Layer>;
+      })}
     </div>
   );
 };

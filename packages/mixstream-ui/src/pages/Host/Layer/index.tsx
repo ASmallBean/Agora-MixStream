@@ -45,10 +45,10 @@ interface Size {
   width: number;
   height: number;
 }
-interface Rect extends Size {
-  x: number;
-  y: number;
-}
+// interface Rect extends Size {
+//   x: number;
+//   y: number;
+// }
 
 interface Layout extends Size {
   left: number;

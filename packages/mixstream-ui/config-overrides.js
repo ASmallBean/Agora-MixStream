@@ -12,7 +12,7 @@ const env = process.env.NODE_ENV || 'development';
 const API_HOSTS = {
   development: 'http://localhost:3030', // disable this line for using remote server
   // development: 'https://assembly-api.gz3.agoralab.co', // enable this line for using remote server
-  production: 'https://assembly-api.gz3.agoralab.co',
+  production: 'https://mixstream-api.gz3.agoralab.co',
 };
 
 module.exports = override(

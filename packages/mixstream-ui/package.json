@@ -26,7 +26,7 @@
     "eventemitter3": "^4.0.7",
     "frameless-titlebar": "^2.1.4",
     "lodash": "^4.17.21",
-    "mixstream-shared": "workspace:^0.0.1-alpha.1",
+    "mixstream-shared": "workspace:0.0.1-alpha.1",
     "react": "^18.1.0",
     "react-contexify": "^5.0.0",
     "react-dom": "^18.1.0",

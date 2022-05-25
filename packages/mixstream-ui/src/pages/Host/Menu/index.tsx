@@ -5,7 +5,7 @@ import { AiOutlineAudio, AiOutlineAudioMuted, AiOutlinePauseCircle, AiOutlinePla
 import { BsBoxArrowLeft } from 'react-icons/bs';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
-import { useUnmount } from 'react-use';
+import { useMount, useUnmount } from 'react-use';
 import { bitrateMap, VIDEO_SOURCE_TYPE } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useStream } from '../../../hooks/stream';
@@ -77,6 +77,10 @@ const HostMenu = () => {
     if (whiteboardRef.current) {
       whiteboardRef.current.destroyWindow();
     }
+  });
+
+  useMount(() => {
+    rtcEngine?.enableAudio(true);
   });
 
   return (

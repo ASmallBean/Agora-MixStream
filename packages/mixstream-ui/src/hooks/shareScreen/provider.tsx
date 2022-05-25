@@ -2,13 +2,14 @@ import { FC, PropsWithChildren, useRef, useState } from 'react';
 import { ScreenSelector, ScreenSelectorHandler } from '../../components/ScreenSelector';
 import { DisplayInfo, WindowInfo } from '../../engine';
 import { useEngine } from '../engine';
+import { useGlobal } from '../global/useGlobal';
 import { ShareScreenContext } from './context';
 
 export const ShareScreenProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const { rtcEngine } = useEngine();
   const [screenModal, setScreenModal] = useState<boolean>(false);
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
-
+  const { setLoading } = useGlobal();
   const [windows, setWindows] = useState<WindowInfo[]>([]);
 
   const cbRef = useRef<ScreenSelectorHandler>(() => {});
@@ -21,14 +22,17 @@ export const ShareScreenProvider: FC<PropsWithChildren<{}>> = ({ children }) => 
     if (!rtcEngine) {
       return;
     }
-    return Promise.all([rtcEngine.getScreenDisplaysInfo(), rtcEngine.getScreenWindowsInfo()]).then(
-      ([displays, windows]) => {
+    setLoading(true);
+    return Promise.all([rtcEngine.getScreenDisplaysInfo(), rtcEngine.getScreenWindowsInfo()])
+      .then(([displays, windows]) => {
         cbRef.current = cb;
         setDisplays(displays || []);
         setWindows(windows || []);
         setScreenModal(true);
-      }
-    );
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (

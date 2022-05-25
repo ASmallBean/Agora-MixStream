@@ -9,6 +9,7 @@ const message = {
   'landing.validate.channel.maxAndMin': '教室名称长度必须在6-12个字符之间',
   'landing.validate.channel.pattern': '教室名称只能包含数字、字母、及其组合',
   'landing.validate.name.required': '请输入昵称',
+  'landing.request.error.role': '当前房间主播已经满了',
   'landing.validate.name.min': '昵称长度必须大于3个字符',
   'landing.validate.role.required': '请选择角色',
   'modal.screen.selector.title': '请选择你想要共享的屏幕或窗口',

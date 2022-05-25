@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkInOut } from '../services/api';
@@ -17,7 +16,6 @@ export const useCheckInOut = () => {
     }
     checkInOut(sessionId, profileId, true)
       .then(() => {
-        message.success('Checked in');
         setIsCheckedIn(true);
       })
       .catch(() => {
@@ -29,9 +27,7 @@ export const useCheckInOut = () => {
     addCloseHandle('close', handle);
     return () => {
       removeCloseHandle('close', handle);
-      checkInOut(sessionId, profileId, false).then(() => {
-        message.success('Checked out');
-      });
+      checkInOut(sessionId, profileId, false);
     };
   }, [sessionId, profileId, navigator]);
 

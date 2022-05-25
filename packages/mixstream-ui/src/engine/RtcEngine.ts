@@ -41,6 +41,15 @@ export class RtcEngine extends EventEmitter {
     this._rtcEngine.on('networkQuality', (_uid, up, down) => {
       this.emit(RtcEngineEvents.NETWORK_QUALITY_CHANGE, { up, down });
     });
+    this._rtcEngine.on('remoteVideoStats', (data) => {
+      console.log('🚀 ~ file: RtcEngine.ts ~ line 45 ~ RtcEngine ~ this._rtcEngine.on ~ data', data);
+    });
+    this._rtcEngine.on('remoteVideoTransportStats', (data) => {
+      console.log('🚀 ~ file: RtcEngine.ts ~ line 45 ~ RtcEngine ~ this._rtcEngine.on ~ data', data);
+    });
+    this._rtcEngine.on('remoteVideoStateChanged', (data) => {
+      console.log('🚀 ~ file: RtcEngine.ts ~ line 45 ~ RtcEngine ~ this._rtcEngine.on ~ data', data);
+    });
     this._rtcEngine.on('videoDeviceStateChanged', (deviceId, deviceType, deviceState) => {
       this.emit(RtcEngineEvents.VIDEO_DEVICE_STATE_CHANGED, { deviceId, deviceType, deviceState });
     });
@@ -50,7 +59,7 @@ export class RtcEngine extends EventEmitter {
     this._rtcEngine.setChannelProfile(0);
     this._rtcEngine.setClientRole(1);
     this._rtcEngine.enableAudio();
-    this._rtcEngine.enableLocalAudio(true);
+    this._rtcEngine.enableLocalAudio(false);
     this._rtcEngine.enableVideo();
     this._rtcEngine.enableLocalVideo(false);
   }
@@ -154,11 +163,19 @@ export class RtcEngine extends EventEmitter {
     return this._rtcEngine.getScreenWindowsInfo() as WindowInfo[];
   }
 
+  enableAudio(status: boolean) {
+    const code = this._rtcEngine.enableLocalAudio(status);
+    if (code !== 0) {
+      throw new Error(`Failed to enableLocalAudio with error code: ${code}`);
+    }
+    status ? this._rtcEngine.enableAudio() : this._rtcEngine.disableAudio();
+    return code;
+  }
+
   publishOrUnpublish(options: { audio?: boolean; video?: boolean }) {
     const { audio, video } = options;
     let code;
     if (audio !== undefined) {
-      console.log('🚀 ~ file: RtcEngine.ts ~ line 167 ~ RtcEngine ~ publishOrUnpublish ~ audio', audio);
       code = this._rtcEngine.enableLocalAudio(audio);
       audio ? this._rtcEngine.enableAudio() : this._rtcEngine.disableAudio();
       if (code !== 0) {

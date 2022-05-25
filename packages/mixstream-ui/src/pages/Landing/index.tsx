@@ -3,6 +3,7 @@ import { RoleType } from 'mixstream-shared';
 import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
+import { useGlobal } from '../../hooks/global/useGlobal';
 import { createProfile, createSession } from '../../services/api';
 import './index.css';
 import { JoinSessionParams } from './interfaces';
@@ -10,10 +11,12 @@ import { JoinSessionParams } from './interfaces';
 const Landing = () => {
   const intl = useIntl();
   const navigate = useNavigate();
+  const { setLoading } = useGlobal();
   const [form] = Form.useForm<JoinSessionParams>();
   const [fromValue, setFromValue] = useLocalStorage<Partial<JoinSessionParams>>('loading-form', {});
 
   const handleFinish = async () => {
+    setLoading(true);
     const value = await form.validateFields();
     setFromValue(value);
     const { channel, username, role } = value;
@@ -27,23 +30,30 @@ const Landing = () => {
       data: { id: sessionId },
     } = sessionRequest;
 
-    const profileRequest = await createProfile(sessionId, { username, role });
-    if (profileRequest.status >= 400) {
-      message.error(sessionRequest.statusText);
-      return;
-    }
-    const {
-      data: { id: profileId },
-    } = profileRequest;
+    createProfile(sessionId, { username, role })
+      .then((data) => {
+        const {
+          data: { id: profileId },
+        } = data;
 
-    switch (role) {
-      case RoleType.HOST:
-        navigate(`/host/session/${sessionId}/profile/${profileId}`);
-        break;
-      case RoleType.NORMAL:
-        navigate(`/viewer/session/${sessionId}/profile/${profileId}`);
-        break;
-    }
+        switch (role) {
+          case RoleType.HOST:
+            navigate(`/host/session/${sessionId}/profile/${profileId}`);
+            break;
+          case RoleType.NORMAL:
+            navigate(`/viewer/session/${sessionId}/profile/${profileId}`);
+            break;
+        }
+      })
+      .catch((err) => {
+        console.log('🚀 ~ file: index.tsx ~ line 46 ~ handleFinish ~ err', err);
+        if (err?.response?.status === 500) {
+          message.error(intl.formatMessage({ id: 'landing.request.error.role' }));
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (

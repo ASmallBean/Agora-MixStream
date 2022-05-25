@@ -3,7 +3,7 @@ const message = {
   'landing.label.name': '昵称',
   'landing.label.role': '角色',
   'landing.role.options.host': '主播',
-  'landing.role.options.student': '观众',
+  'landing.role.options.viewer': '观众',
   'landing.button.join': '加入教室',
   'landing.validate.channel.required': '请输入教室名称',
   'landing.validate.channel.maxAndMin': '教室名称长度必须在6-12个字符之间',

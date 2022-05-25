@@ -5,15 +5,16 @@
   "main": "build/electron/main.js",
   "description": "mix stream app",
   "author": "yangliu@agora.io",
+  "homepage": "./",
   "scripts": {
     "start": "concurrently \"pnpm run start:render\" \"pnpm run start:main\"",
     "start:render": "cross-env BROWSER=none react-app-rewired start",
     "start:main": "tsc -p electron && cross-env NODE_ENV=development electron .",
-    "build": "pnpm run build:render  && pnpm run build:electron",
-    "build:dev": "pnpm run build:render:dev  && pnpm run build:electron",
-    "build:render": "rimraf ./dist && cross-env NODE_ENV=production GENERATE_SOURCEMAP=false react-app-rewired build",
-    "build:render:dev": "rimraf ./dist && cross-env NODE_ENV=development react-app-rewired build",
-    "build:main": "rimraf ./build/electron && tsc -p electron && electron-builder"
+    "build": "pnpm run build:render  && pnpm run build:main",
+    "build:dev": "pnpm run build:render:dev  && pnpm run build:main",
+    "build:render": "rimraf ./build && cross-env NODE_ENV=production GENERATE_SOURCEMAP=false react-app-rewired build",
+    "build:render:dev": "rimraf ./build && cross-env NODE_ENV=development react-app-rewired build",
+    "build:main": "rimraf ./dist && tsc -p electron && electron-builder"
   },
   "dependencies": {
     "@netless/fastboard-react": "0.3.2-canary.6",
@@ -108,7 +109,11 @@
     "mac": {
       "target": "dmg",
       "entitlements": "entitlements.mac.plist",
-      "hardenedRuntime": true
+      "hardenedRuntime": true,
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "请允许本程序访问您的麦克风",
+        "NSCameraUsageDescription": "请允许本程序访问您的摄像头"
+      }
     },
     "win": {
       "target": "nsis",

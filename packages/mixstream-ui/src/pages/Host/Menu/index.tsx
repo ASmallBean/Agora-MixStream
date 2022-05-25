@@ -89,7 +89,9 @@ const HostMenu = () => {
         onClick={_.throttle(async () => {
           if (sessionId && profileId) {
             const pathname = `/#/session/${sessionId}/profile/${profileId}/whiteboard`;
+
             whiteboardRef.current = WhiteboardBrowserWindow.singleton();
+            console.log('🚀 load whiteboard :', hostPath() + pathname);
             whiteboardRef.current.open(hostPath() + pathname).then((browserWindow) => {
               browserWindow.on('closed', () => {
                 setWhiteboard(false);

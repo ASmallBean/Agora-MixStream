@@ -44,11 +44,11 @@ class WhiteboardBrowserWindow {
       this.browserWindow?.show();
     });
 
+    this.browserWindow.loadURL(url);
+
     this.browserWindow.on('closed', () => {
       this.destroyWindow();
     });
-
-    this.browserWindow.loadURL(url);
 
     return this.browserWindow;
   }

@@ -45,7 +45,6 @@ async function removeInvalidSymlinks({
     return new Promise((resolve, reject) => {
       exec(`rm ${invalidSymlink}`, (error, stdout, stderr) => {
         console.log(`command: rm ${invalidSymlink}`);
-
         if (error) {
           console.error(`error: ${error.message}`);
           return reject(error);

@@ -21,10 +21,9 @@ const ViewerMain = () => {
       return;
     }
     const { token, uid } = stream;
-    console.log('🚀 ~ ', { token, uid, channel });
-    videoRef.current && rtcEngine.subscribe(54569, channel, videoRef.current);
+    console.log('🚀 用户信息 ', { token, uid, channel });
     const handle = (data: { connId: { channelId: string; localUid: number }; uid: number }) => {
-      console.log('🚀 ~ file: add stream handle ~ data', data);
+      console.log('🚀 add stream handle ~ data', data);
       const { connId, uid } = data;
       if (videoRef.current && uid && connId?.channelId) {
         rtcEngine.subscribe(uid, connId.channelId, videoRef.current);

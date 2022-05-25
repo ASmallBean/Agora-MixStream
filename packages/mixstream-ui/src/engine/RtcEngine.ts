@@ -123,12 +123,14 @@ export class RtcEngine extends EventEmitter {
   }
 
   async subscribe(uid: number, channelId: string, attachEl: HTMLElement): Promise<number> {
-    console.log('🚀 subscribe ~ uid', uid);
+    console.log('🚀 subscribe', {
+      uid,
+      channelId,
+    });
     const code = this._rtcEngine.setupRemoteView(uid, channelId, attachEl, { append: false });
     if (code !== 0) {
       throw new Error(`Failed to setupRemoteView with error code: ${code}`);
     }
-    console.log('订阅成功');
     return code;
   }
 

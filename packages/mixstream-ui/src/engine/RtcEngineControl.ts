@@ -46,8 +46,6 @@ export class RtcEngineControl extends RtcEngine {
 
     code = this.joinChannelWithMediaOptions(token, channel, uid, {
       publishTrancodedVideoTrack: true,
-      autoSubscribeVideo: true,
-      autoSubscribeAudio: true,
     });
     if (code === 0) {
       this._isJoinedChannel = true;

@@ -10,7 +10,7 @@ import { message } from 'antd';
 import { remote } from 'electron';
 import EventEmitter from 'eventemitter3';
 import { isMacOS } from '../utils';
-import { DisplayInfo, VideoDeviceInfo, VIDEO_SOURCE_TYPE, WindowInfo } from './type';
+import { DeviceInfo, DisplayInfo, VIDEO_SOURCE_TYPE, WindowInfo } from './type';
 
 const LOGS_FOLDER = isMacOS() ? `${window.process.env.HOME}/Library/Logs/MixStreamClient` : './log';
 
@@ -152,14 +152,14 @@ export class RtcEngine extends EventEmitter {
   }
 
   getVideoDevices() {
-    return this._rtcEngine.getVideoDevices() as VideoDeviceInfo[];
+    return this._rtcEngine.getVideoDevices() as DeviceInfo[];
   }
 
-  getScreenDisplaysInfo() {
+  async getScreenDisplaysInfo() {
     return this._rtcEngine.getScreenDisplaysInfo() as DisplayInfo[];
   }
 
-  getScreenWindowsInfo() {
+  async getScreenWindowsInfo() {
     return this._rtcEngine.getScreenWindowsInfo() as WindowInfo[];
   }
 

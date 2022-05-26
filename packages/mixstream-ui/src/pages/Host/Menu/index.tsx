@@ -1,17 +1,33 @@
 import { Button, Dropdown, Menu, Select } from 'antd';
 import _ from 'lodash';
-import { useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { AiOutlineAudio, AiOutlineAudioMuted, AiOutlinePauseCircle, AiOutlinePlayCircle } from 'react-icons/ai';
 import { BsBoxArrowLeft } from 'react-icons/bs';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
 import { useMount, useUnmount } from 'react-use';
-import { bitrateMap, VIDEO_SOURCE_TYPE } from '../../../engine';
+import CameraSelector from '../../../components/CameraSelector';
+import { ScreenSelector, ScreenSelectorHandler } from '../../../components/ScreenSelector';
+import {
+  bitrateMap,
+  DeviceInfo,
+  DisplayInfo,
+  Resolution,
+  ShareScreenType,
+  VIDEO_SOURCE_TYPE,
+  WindowInfo,
+} from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
+import { useGlobal } from '../../../hooks/global/useGlobal';
 import { useStream } from '../../../hooks/stream';
 import { hostPath } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
+import {
+  getLayerConfigFromDisplayInfo,
+  getLayerConfigFromMediaDeviceInfo,
+  getLayerConfigFromWindowInfo,
+} from '../Layer';
 import './index.css';
 
 export enum MenuEventEnum {
@@ -26,6 +42,7 @@ const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: v 
 const HostMenu = () => {
   const intl = useIntl();
   const { rtcEngine } = useEngine();
+  const { setLoading } = useGlobal();
   const whiteboardRef = useRef<WhiteboardBrowserWindow | null>(null);
   const {
     audio,
@@ -39,10 +56,42 @@ const HostMenu = () => {
     shareScreen,
     shareWhiteboard,
     removeStream,
+    addStream,
   } = useStream();
   const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
+  const [cameraVisible, setCameraVisible] = useState(false);
+  const [screenVisible, setScreenVisible] = useState(false);
+  const [displayList, setDisplayList] = useState<DisplayInfo[]>([]);
+  const [windowList, setWindowList] = useState<WindowInfo[]>([]);
 
-  const menu = (
+  const onCameraSelected = useCallback(
+    (deviceInfo: DeviceInfo, resolution: Resolution) => {
+      setCameraVisible(false);
+      addStream(
+        getLayerConfigFromMediaDeviceInfo(
+          { ...deviceInfo, ...resolution },
+          VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY
+        )
+      );
+    },
+    [addStream]
+  );
+
+  const onScreenSelected = useCallback<ScreenSelectorHandler>(
+    (type, data) => {
+      setScreenVisible(false);
+      switch (type) {
+        case ShareScreenType.Display:
+          addStream(getLayerConfigFromDisplayInfo(data as DisplayInfo, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY));
+          break;
+        case ShareScreenType.Window:
+          addStream(getLayerConfigFromWindowInfo(data as WindowInfo, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY));
+          break;
+      }
+    },
+    [addStream]
+  );
+  const createLayerMenu = (
     <Menu
       items={[
         {
@@ -50,7 +99,7 @@ const HostMenu = () => {
           key: 'camera',
           disabled: !shareCamera || play,
           onClick: () => {
-            rtcEngine?.emit(ChannelEnum.MenuControl, MenuEventEnum.CreateCameraLayer);
+            setCameraVisible(true);
           },
         },
         {
@@ -58,7 +107,18 @@ const HostMenu = () => {
           key: 'screen',
           disabled: !shareScreen || play,
           onClick: () => {
-            rtcEngine?.emit(ChannelEnum.MenuControl, MenuEventEnum.CreateScreenLayer);
+            if (rtcEngine) {
+              setLoading(true);
+              return Promise.all([rtcEngine.getScreenDisplaysInfo(), rtcEngine.getScreenWindowsInfo()])
+                .then(([displays, windows]) => {
+                  setDisplayList(displays || []);
+                  setWindowList(windows || []);
+                  setScreenVisible(true);
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
+            }
           },
         },
         {
@@ -73,19 +133,19 @@ const HostMenu = () => {
     />
   );
 
+  useMount(() => {
+    rtcEngine?.enableAudio(true);
+  });
+
   useUnmount(() => {
     if (whiteboardRef.current) {
       whiteboardRef.current.destroyWindow();
     }
   });
 
-  useMount(() => {
-    rtcEngine?.enableAudio(true);
-  });
-
   return (
     <div className="host-menu">
-      <Dropdown overlay={menu} placement="bottomLeft">
+      <Dropdown overlay={createLayerMenu} placement="bottomLeft">
         <Button>{intl.formatMessage({ id: 'host.menu.layer.new' })}</Button>
       </Dropdown>
       <Button
@@ -159,6 +219,22 @@ const HostMenu = () => {
       >
         <BsBoxArrowLeft size={21} />
       </Button>
+      <CameraSelector
+        visible={cameraVisible}
+        onCancel={() => {
+          setCameraVisible(false);
+        }}
+        onSuccess={onCameraSelected}
+      />
+      <ScreenSelector
+        visible={screenVisible}
+        displays={displayList}
+        windows={windowList}
+        onCancel={() => {
+          setScreenVisible(false);
+        }}
+        onSuccess={onScreenSelected}
+      />
     </div>
   );
 };

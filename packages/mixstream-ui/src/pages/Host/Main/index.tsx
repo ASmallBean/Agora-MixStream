@@ -1,33 +1,18 @@
 import { useEffect } from 'react';
-import {
-  bitrateMap,
-  DisplayInfo,
-  getResolutionSize,
-  ShareScreenType,
-  VIDEO_SOURCE_TYPE,
-  WindowInfo,
-} from '../../../engine';
+import { bitrateMap, resolutionFormate, VIDEO_SOURCE_TYPE } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
-import { useShareCamera } from '../../../hooks/shareCamera/useShareCamera';
-import { useShareScreen } from '../../../hooks/shareScreen/useShareScreen';
 import { useStream } from '../../../hooks/stream';
 import { findVideoStreamFromProfile } from '../../../services/api';
 import { ChannelEnum } from '../../../utils/channel';
 import { WhiteboardTitle } from '../../Whiteboard';
-import Layer, {
-  getLayerConfigFromDisplayInfo,
-  getLayerConfigFromMediaDeviceInfo,
-  getLayerConfigFromWindowInfo,
-} from '../Layer';
+import Layer, { getLayerConfigFromWindowInfo } from '../Layer';
 import { MenuEventEnum } from '../Menu';
 import './index.css';
 
 const HostMain = () => {
   const { rtcEngine } = useEngine();
-  const { openModal: openShareCameraModal } = useShareCamera();
-  const { openModal: openShareScreenModal } = useShareScreen();
   const { streams, addStream, removeStream, setPlay, resolution, play } = useStream();
   const { profile } = useProfile();
   const { channel } = useSession();
@@ -38,39 +23,8 @@ const HostMain = () => {
     }
     const handle = async (event: MenuEventEnum) => {
       switch (event) {
-        case MenuEventEnum.CreateCameraLayer:
-          if (openShareCameraModal) {
-            openShareCameraModal(async (deviceInfo, resolution) => {
-              addStream(
-                getLayerConfigFromMediaDeviceInfo(
-                  { ...deviceInfo, ...resolution },
-                  VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY
-                )
-              );
-              return;
-            });
-          }
-          break;
-        case MenuEventEnum.CreateScreenLayer:
-          if (openShareScreenModal) {
-            openShareScreenModal(async (type, data) => {
-              switch (type) {
-                case ShareScreenType.Display:
-                  addStream(
-                    getLayerConfigFromDisplayInfo(data as DisplayInfo, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY)
-                  );
-                  break;
-                case ShareScreenType.Window:
-                  addStream(
-                    getLayerConfigFromWindowInfo(data as WindowInfo, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY)
-                  );
-                  break;
-              }
-            });
-          }
-          break;
         case MenuEventEnum.CreateWhiteboardLayer:
-          const windowInfoList = rtcEngine.getScreenWindowsInfo();
+          const windowInfoList = await rtcEngine.getScreenWindowsInfo();
           if (windowInfoList && windowInfoList.length) {
             const w = windowInfoList.find((v) => {
               return v.name === WhiteboardTitle;
@@ -86,7 +40,7 @@ const HostMain = () => {
     return () => {
       rtcEngine.removeListener(ChannelEnum.MenuControl, handle);
     };
-  }, [addStream, openShareCameraModal, openShareScreenModal, rtcEngine]);
+  }, [addStream, rtcEngine]);
 
   useEffect(() => {
     const handle = (data: { play: boolean }) => {
@@ -99,7 +53,7 @@ const HostMain = () => {
             return;
           }
           const { token, uid } = stream;
-          const options = getResolutionSize(resolution);
+          const options = resolutionFormate(resolution);
           code = rtcEngine.play({ token, channel, uid }, streams, { bitrate: bitrateMap[resolution], ...options });
         } else {
           // 停止推流
@@ -117,7 +71,7 @@ const HostMain = () => {
   }, [channel, profile, resolution, rtcEngine, setPlay, streams]);
 
   useEffect(() => {
-    const options = getResolutionSize(resolution);
+    const options = resolutionFormate(resolution);
     if (play) {
       rtcEngine?.updateLocalTranscoderOutVideoConfig(streams, { bitrate: bitrateMap[resolution], ...options });
     }

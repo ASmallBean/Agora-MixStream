@@ -1,5 +1,5 @@
 import { createContext, Dispatch, SetStateAction } from 'react';
-import { bitrates, VIDEO_SOURCE_TYPE } from '../../engine';
+import { bitrateList, VIDEO_SOURCE_TYPE } from '../../engine';
 import { LayerConfig } from '../../pages/Host/Layer';
 
 export interface StreamContextProps {
@@ -30,7 +30,7 @@ export const StreamContext = createContext<StreamContextProps>({
   setAudio: () => {},
   whiteboard: false,
   setWhiteboard: () => {},
-  resolution: bitrates[0],
+  resolution: bitrateList[0],
   updateResolution: () => {},
   streams: [],
   addStream: () => {},

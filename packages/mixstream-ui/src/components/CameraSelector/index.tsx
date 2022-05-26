@@ -2,14 +2,14 @@ import { Form, Modal, Select } from 'antd';
 import FormItem from 'antd/lib/form/FormItem';
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { resolutionMap, RtcEngineEvents, VideoDeviceInfo, VIDEO_SOURCE_TYPE } from '../../engine';
+import { DeviceInfo, resolutionMap, RtcEngineEvents, VIDEO_SOURCE_TYPE } from '../../engine';
 import { useEngine } from '../../hooks/engine';
 import { useStream } from '../../hooks/stream';
 import './index.css';
 
 export interface CameraSelectorProps {
   onCancel: () => void;
-  onOk: (device: VideoDeviceInfo, resolution: { width: number; height: number }) => void;
+  onSuccess: (device: DeviceInfo, resolution: { width: number; height: number }) => void;
   visible: boolean;
 }
 const { Option } = Select;
@@ -27,20 +27,20 @@ const formLayout = {
 };
 
 const CameraSelector: FC<CameraSelectorProps> = (props) => {
-  const { onCancel, onOk, visible } = props;
+  const { onCancel, onSuccess, visible } = props;
   const intl = useIntl();
   const { rtcEngine } = useEngine();
   const { freeCameraCaptureSource } = useStream();
   const domRef = useRef<HTMLDivElement>(null);
   const [form] = Form.useForm<CameraForm>();
-  const [devices, setDevices] = useState<VideoDeviceInfo[]>([]);
+  const [devices, setDevices] = useState<DeviceInfo[]>([]);
 
-  const handleOk = async () => {
+  const onSelectedHandle = async () => {
     const value = await form.validateFields();
     const { deviceId, resolution } = value;
     const data = devices.find((v) => v.deviceid === deviceId);
-    if (data && onOk) {
-      onOk(data, resolutionMap[resolution]);
+    if (data && onSuccess) {
+      onSuccess(data, resolutionMap[resolution]);
     }
   };
 
@@ -93,7 +93,7 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       title={intl.formatMessage({ id: `modal.camera.selector.title` })}
       okText={intl.formatMessage({ id: `modal.camera.selector.ok` })}
       visible={visible}
-      onOk={handleOk}
+      onOk={onSelectedHandle}
       width={550}
       onCancel={onCancel}
     >

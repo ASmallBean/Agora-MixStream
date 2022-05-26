@@ -3,11 +3,11 @@ import { FC, useCallback, useEffect, useId, useMemo, useRef, useState } from 're
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
 import { useMount, useWindowSize } from 'react-use';
 import {
+  DeviceInfo,
   DisplayInfo,
-  getResolutionSize,
+  resolutionFormate,
   RtcEngineControl,
   ScreenCaptureFullScreenRect,
-  VideoDeviceInfo,
   VIDEO_SOURCE_TYPE,
   WindowInfo,
 } from '../../../engine';
@@ -98,7 +98,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
 
   // 换算图层在合图的时候的布局数据
   useEffect(() => {
-    const { width: resolutionWidth, height: resolutionHeight } = getResolutionSize(resolution);
+    const { width: resolutionWidth, height: resolutionHeight } = resolutionFormate(resolution);
     const { width: layoutWidth, height: layoutHeight, left, top, zIndex } = layout;
     const { width: canvasWidth, height: canvasHeight } = canvasSize;
     const x = Math.ceil((resolutionWidth * left) / canvasWidth);
@@ -358,7 +358,7 @@ export const getLayerConfigFromWindowInfo = (
 };
 
 export const getLayerConfigFromMediaDeviceInfo = (
-  data: VideoDeviceInfo & Pick<LayerConfig, 'width' | 'height'>,
+  data: DeviceInfo & Pick<LayerConfig, 'width' | 'height'>,
   sourceType: VIDEO_SOURCE_TYPE,
   options?: Partial<LayerConfig>
 ): LayerConfig => {

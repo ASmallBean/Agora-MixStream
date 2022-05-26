@@ -45,12 +45,12 @@ export interface ScreenSelectorProps {
   visible: boolean;
   displays: DisplayInfo[];
   windows: WindowInfo[];
-  onOk: ScreenSelectorHandler;
+  onSuccess: ScreenSelectorHandler;
   onCancel: () => void;
 }
 
 export const ScreenSelector: FC<ScreenSelectorProps> = (props) => {
-  const { visible, onOk, onCancel, displays, windows } = props;
+  const { visible, onSuccess, onCancel, displays, windows } = props;
   const intl = useIntl();
   const [selectedInfo, setSelectedInfo] = useState<{ id: number; type: ShareScreenType }>();
 
@@ -61,11 +61,11 @@ export const ScreenSelector: FC<ScreenSelectorProps> = (props) => {
     switch (selectedInfo.type) {
       case ShareScreenType.Display:
         const displayData = displays.find((v) => v.displayId.id === selectedInfo.id);
-        displayData && onOk(selectedInfo.type, displayData);
+        displayData && onSuccess(selectedInfo.type, displayData);
         break;
       case ShareScreenType.Window:
         const windowData = windows.find((v) => v.windowId === selectedInfo.id);
-        windowData && onOk(selectedInfo.type, windowData);
+        windowData && onSuccess(selectedInfo.type, windowData);
         break;
     }
   };

@@ -1,3 +1,13 @@
+export interface Resolution {
+  width: number;
+  height: number;
+}
+
+export interface ChannelInfo {
+  token: string;
+  channel: string;
+  uid: number;
+}
 export interface WindowInfo {
   windowId: number;
   name: string;
@@ -37,7 +47,7 @@ export enum ShareScreenType {
   Window = 'window',
 }
 
-export interface VideoDeviceInfo {
+export interface DeviceInfo {
   deviceid: string;
   devicename: string;
 }

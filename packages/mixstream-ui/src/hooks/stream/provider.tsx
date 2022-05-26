@@ -1,11 +1,11 @@
 import { FC, PropsWithChildren, useCallback, useMemo, useState } from 'react';
-import { bitrates, VIDEO_SOURCE_TYPE } from '../../engine';
+import { bitrateList, VIDEO_SOURCE_TYPE } from '../../engine';
 import { LayerConfig } from '../../pages/Host/Layer';
 import { StreamContext } from './context';
 
 export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const [streams, setStreams] = useState<LayerConfig[]>([]);
-  const [resolution, setResolution] = useState(bitrates[0]);
+  const [resolution, setResolution] = useState(bitrateList[0]);
   const [play, setPlay] = useState(false);
   const [audio, setAudio] = useState(true);
   const [whiteboard, setWhiteboard] = useState(false);

@@ -1,6 +1,8 @@
 name: CI-API
-on: [push, pull_request]
-
+on:
+  push:
+    tags:
+      - '*.*.*'
 jobs:
   build-api:
     runs-on: 'ubuntu-latest'

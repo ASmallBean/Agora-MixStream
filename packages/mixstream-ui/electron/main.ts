@@ -43,7 +43,6 @@ async function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
-  createWindow();
 });
 
 app.allowRendererProcessReuse = false;

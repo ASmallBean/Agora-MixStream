@@ -4,7 +4,6 @@ const __DEV__ = process.env.NODE_ENV === 'development';
 
 async function createWindow() {
   const { height, width } = screen.getPrimaryDisplay().workAreaSize;
-
   const win = new BrowserWindow({
     height: process.platform === 'win32' ? 768 : height,
     width: process.platform === 'win32' ? 1024 : width,

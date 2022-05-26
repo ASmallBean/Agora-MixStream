@@ -5,7 +5,6 @@ import { useGlobal } from '../hooks/global/useGlobal';
 
 const BlankLayout: FC<PropsWithChildren<{}>> = ({ children }) => {
   const { titleBar, loading } = useGlobal();
-  console.log('🚀 ~ file: BlankLayout.tsx ~ line 8 ~ loading', loading);
   const loadingCom = useMemo(() => {
     return loading ? (
       <div className="loading-container">

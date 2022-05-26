@@ -16,7 +16,7 @@ class WhiteboardBrowserWindow {
 
   browserWindow: BrowserWindow | null = null;
 
-  public async open(url: string) {
+  public async create() {
     if (this.browserWindow) {
       return this.browserWindow;
     }
@@ -44,17 +44,11 @@ class WhiteboardBrowserWindow {
       this.browserWindow?.show();
     });
 
-    this.browserWindow.loadURL(url);
-
-    this.browserWindow.on('closed', () => {
-      this.destroyWindow();
-    });
-
     return this.browserWindow;
   }
 
   public destroyWindow() {
-    this.browserWindow && this.browserWindow.close();
+    this.browserWindow && this.browserWindow.destroy();
     this.browserWindow = null;
   }
 }

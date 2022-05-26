@@ -24,7 +24,7 @@ import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
 import { findVideoStreamFromProfile } from '../../../services/api';
-import { hostPath } from '../../../utils';
+import { hostPath, isDev } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import { WhiteboardTitle } from '../../Whiteboard';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
@@ -177,12 +177,19 @@ const HostMenu = () => {
         disabled={whiteboard}
         onClick={_.throttle(async () => {
           if (sessionId && profileId) {
-            const pathname = `/#/session/${sessionId}/profile/${profileId}/whiteboard`;
             whiteboardRef.current = WhiteboardBrowserWindow.singleton();
-            console.log('🚀 load whiteboard :', hostPath() + pathname);
-            whiteboardRef.current.open(hostPath() + pathname).then((browserWindow) => {
-              browserWindow.on('closed', () => {
+            whiteboardRef.current.create().then((browserWindow) => {
+              if (isDev) {
+                browserWindow.loadURL(hostPath());
+              } else {
+                const hash = `/session/${sessionId}/profile/${profileId}/whiteboard`;
+                browserWindow.loadFile('build/index.html', { hash });
+              }
+              browserWindow.on('close', (e) => {
+                e.preventDefault();
                 setWhiteboard(false);
+                whiteboardRef.current?.destroyWindow();
+                whiteboardRef.current = null;
                 removeStream(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY);
               });
               setWhiteboard(true);
@@ -230,7 +237,6 @@ const HostMenu = () => {
         onClick={_.throttle(async () => {
           if (rtcEngine) {
             let code;
-            console.log('🚀 ~ file: index.tsx ~ line 234 ~ onClick={_.throttle ~ play', play);
             if (!play) {
               const stream = findVideoStreamFromProfile(profile);
               if (!stream || !channel) {
@@ -243,7 +249,6 @@ const HostMenu = () => {
               // 停止推流
               code = rtcEngine.stop();
             }
-            console.log('🚀 ~ file: index.tsx ~ line 246 ~ onClick={_.throttle ~ code', code);
             if (code === 0) {
               setPlay((pre) => !pre);
             }

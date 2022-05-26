@@ -162,7 +162,7 @@ export class RtcEngine extends EventEmitter {
     if (code !== 0) {
       throw new Error(`Failed to enableLocalAudio with error code: ${code}`);
     }
-    status ? this._rtcEngine.enableAudio() : this._rtcEngine.disableAudio();
+    // status ? this._rtcEngine.enableAudio() : this._rtcEngine.disableAudio();
     return code;
   }
 
@@ -171,7 +171,7 @@ export class RtcEngine extends EventEmitter {
     let code;
     if (audio !== undefined) {
       code = this._rtcEngine.enableLocalAudio(audio);
-      audio ? this._rtcEngine.enableAudio() : this._rtcEngine.disableAudio();
+      // audio ? this._rtcEngine.enableAudio() : this._rtcEngine.disableAudio();
       if (code !== 0) {
         throw new Error(`Failed to enableLocalAudio with error code: ${code}`);
       }

@@ -1,11 +1,11 @@
 import { Button, Dropdown, Menu, Select } from 'antd';
 import _ from 'lodash';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AiOutlineAudio, AiOutlineAudioMuted, AiOutlinePauseCircle, AiOutlinePlayCircle } from 'react-icons/ai';
 import { BsBoxArrowLeft } from 'react-icons/bs';
 import { useIntl } from 'react-intl';
 import { useParams } from 'react-router-dom';
-import { useMount, useUnmount } from 'react-use';
+import { useUnmount } from 'react-use';
 import CameraSelector from '../../../components/CameraSelector';
 import { ScreenSelector, ScreenSelectorHandler } from '../../../components/ScreenSelector';
 import {
@@ -13,13 +13,17 @@ import {
   DeviceInfo,
   DisplayInfo,
   Resolution,
+  resolutionFormate,
   ShareScreenType,
   VIDEO_SOURCE_TYPE,
   WindowInfo,
 } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useGlobal } from '../../../hooks/global/useGlobal';
+import { useProfile } from '../../../hooks/profile';
+import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
+import { findVideoStreamFromProfile } from '../../../services/api';
 import { hostPath } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import { WhiteboardTitle } from '../../Whiteboard';
@@ -37,6 +41,8 @@ const HostMenu = () => {
   const intl = useIntl();
   const { rtcEngine } = useEngine();
   const { setLoading } = useGlobal();
+  const { channel } = useSession();
+  const { profile } = useProfile();
   const whiteboardRef = useRef<WhiteboardBrowserWindow | null>(null);
   const {
     audio,
@@ -51,6 +57,8 @@ const HostMenu = () => {
     shareWhiteboard,
     removeStream,
     addStream,
+    setPlay,
+    streams,
   } = useStream();
   const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
   const [cameraVisible, setCameraVisible] = useState(false);
@@ -150,9 +158,9 @@ const HostMenu = () => {
     />
   );
 
-  useMount(() => {
-    rtcEngine?.enableAudio(true);
-  });
+  useEffect(() => {
+    rtcEngine?.publishOrUnpublish({ audio: true });
+  }, [rtcEngine]);
 
   useUnmount(() => {
     if (whiteboardRef.current) {
@@ -220,7 +228,26 @@ const HostMenu = () => {
           id: play ? 'host.menu.play.off' : 'host.menu.play.on',
         })}
         onClick={_.throttle(async () => {
-          rtcEngine?.emit(ChannelEnum.PlayOrStop, { play: !play });
+          if (rtcEngine) {
+            let code;
+            console.log('🚀 ~ file: index.tsx ~ line 234 ~ onClick={_.throttle ~ play', play);
+            if (!play) {
+              const stream = findVideoStreamFromProfile(profile);
+              if (!stream || !channel) {
+                return;
+              }
+              const { token, uid } = stream;
+              const options = resolutionFormate(resolution);
+              code = rtcEngine.play({ token, channel, uid }, streams, { bitrate: bitrateMap[resolution], ...options });
+            } else {
+              // 停止推流
+              code = rtcEngine.stop();
+            }
+            console.log('🚀 ~ file: index.tsx ~ line 246 ~ onClick={_.throttle ~ code', code);
+            if (code === 0) {
+              setPlay((pre) => !pre);
+            }
+          }
         }, 200)}
       >
         {play ? <AiOutlinePauseCircle size={22} /> : <AiOutlinePlayCircle size={22} />}

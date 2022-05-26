@@ -41,15 +41,7 @@ export class RtcEngine extends EventEmitter {
     this._rtcEngine.on('networkQuality', (_uid, up, down) => {
       this.emit(RtcEngineEvents.NETWORK_QUALITY_CHANGE, { up, down });
     });
-    this._rtcEngine.on('remoteVideoStats', (data) => {
-      console.log('🚀 ~ file: RtcEngine.ts ~ line 45 ~ RtcEngine ~ this._rtcEngine.on ~ data', data);
-    });
-    this._rtcEngine.on('remoteVideoTransportStats', (data) => {
-      console.log('🚀 ~ file: RtcEngine.ts ~ line 45 ~ RtcEngine ~ this._rtcEngine.on ~ data', data);
-    });
-    this._rtcEngine.on('remoteVideoStateChanged', (data) => {
-      console.log('🚀 ~ file: RtcEngine.ts ~ line 45 ~ RtcEngine ~ this._rtcEngine.on ~ data', data);
-    });
+
     this._rtcEngine.on('videoDeviceStateChanged', (deviceId, deviceType, deviceState) => {
       this.emit(RtcEngineEvents.VIDEO_DEVICE_STATE_CHANGED, { deviceId, deviceType, deviceState });
     });
@@ -80,7 +72,12 @@ export class RtcEngine extends EventEmitter {
     return code;
   }
 
-  joinChannelWithMediaOptions(token: string, channelId: string, userId: number, options: ChannelMediaOptions): number {
+  joinChannelWithMediaOptions(
+    token: string,
+    channelId: string,
+    userId: number,
+    options: ChannelMediaOptions = {}
+  ): number {
     const code = this._rtcEngine.joinChannelWithMediaOptions(token, channelId, userId, options || {});
     if (code !== 0) {
       throw new Error(`Failed to joinChannelWithMediaOptions with error code: ${code}`);
@@ -132,14 +129,11 @@ export class RtcEngine extends EventEmitter {
   }
 
   async subscribe(uid: number, channelId: string, attachEl: HTMLElement): Promise<number> {
-    console.log('🚀 subscribe', {
-      uid,
-      channelId,
-    });
     const code = this._rtcEngine.setupRemoteView(uid, channelId, attachEl, { append: false });
     if (code !== 0) {
       throw new Error(`Failed to setupRemoteView with error code: ${code}`);
     }
+    console.log('🚀  subscribe ~ uid', uid);
     return code;
   }
 

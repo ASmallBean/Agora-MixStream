@@ -22,6 +22,7 @@ import { useGlobal } from '../../../hooks/global/useGlobal';
 import { useStream } from '../../../hooks/stream';
 import { hostPath } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
+import { WhiteboardTitle } from '../../Whiteboard';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
 import {
   getLayerConfigFromDisplayInfo,
@@ -29,13 +30,6 @@ import {
   getLayerConfigFromWindowInfo,
 } from '../Layer';
 import './index.css';
-
-export enum MenuEventEnum {
-  CreateCameraLayer, // 创建摄像头图层
-  CreateScreenLayer, // 创建屏幕图层
-  CreateWhiteboardLayer, // 创建白板图层
-  Play, // 创建白板图层
-}
 
 const bitrateOptions = Object.keys(bitrateMap).map((v) => ({ label: v, value: v }));
 
@@ -91,6 +85,18 @@ const HostMenu = () => {
     },
     [addStream]
   );
+
+  const openScreenSelector = () => {
+    Promise.all([rtcEngine?.getScreenDisplaysInfo(), rtcEngine?.getScreenWindowsInfo()])
+      .then(([displays, windows]) => {
+        setDisplayList(displays || []);
+        setWindowList(windows || []);
+        setScreenVisible(true);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
   const createLayerMenu = (
     <Menu
       items={[
@@ -107,18 +113,10 @@ const HostMenu = () => {
           key: 'screen',
           disabled: !shareScreen || play,
           onClick: () => {
-            if (rtcEngine) {
-              setLoading(true);
-              return Promise.all([rtcEngine.getScreenDisplaysInfo(), rtcEngine.getScreenWindowsInfo()])
-                .then(([displays, windows]) => {
-                  setDisplayList(displays || []);
-                  setWindowList(windows || []);
-                  setScreenVisible(true);
-                })
-                .finally(() => {
-                  setLoading(false);
-                });
-            }
+            setLoading(true);
+            setTimeout(() => {
+              openScreenSelector();
+            }, 0);
           },
         },
         {
@@ -126,7 +124,26 @@ const HostMenu = () => {
           key: 'whiteboard',
           disabled: !whiteboard || !shareWhiteboard || play,
           onClick: () => {
-            rtcEngine?.emit(ChannelEnum.MenuControl, MenuEventEnum.CreateWhiteboardLayer);
+            if (rtcEngine) {
+              setLoading(true);
+              rtcEngine
+                .getScreenWindowsInfo()
+                .then((data) => {
+                  if (data && data.length) {
+                    const whiteboardWindow = data.find((v) => {
+                      return v.name === WhiteboardTitle;
+                    });
+                    if (whiteboardWindow) {
+                      addStream(
+                        getLayerConfigFromWindowInfo(whiteboardWindow, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY)
+                      );
+                    }
+                  }
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
+            }
           },
         },
       ]}
@@ -153,7 +170,6 @@ const HostMenu = () => {
         onClick={_.throttle(async () => {
           if (sessionId && profileId) {
             const pathname = `/#/session/${sessionId}/profile/${profileId}/whiteboard`;
-
             whiteboardRef.current = WhiteboardBrowserWindow.singleton();
             console.log('🚀 load whiteboard :', hostPath() + pathname);
             whiteboardRef.current.open(hostPath() + pathname).then((browserWindow) => {
@@ -204,7 +220,7 @@ const HostMenu = () => {
           id: play ? 'host.menu.play.off' : 'host.menu.play.on',
         })}
         onClick={_.throttle(async () => {
-          rtcEngine?.emit(ChannelEnum.PlayChannel, { play: !play });
+          rtcEngine?.emit(ChannelEnum.PlayOrStop, { play: !play });
         }, 200)}
       >
         {play ? <AiOutlinePauseCircle size={22} /> : <AiOutlinePlayCircle size={22} />}

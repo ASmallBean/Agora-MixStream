@@ -1,46 +1,19 @@
 import { useEffect } from 'react';
-import { bitrateMap, resolutionFormate, VIDEO_SOURCE_TYPE } from '../../../engine';
+import { bitrateMap, resolutionFormate } from '../../../engine';
 import { useEngine } from '../../../hooks/engine';
 import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
 import { findVideoStreamFromProfile } from '../../../services/api';
 import { ChannelEnum } from '../../../utils/channel';
-import { WhiteboardTitle } from '../../Whiteboard';
-import Layer, { getLayerConfigFromWindowInfo } from '../Layer';
-import { MenuEventEnum } from '../Menu';
+import Layer from '../Layer';
 import './index.css';
 
 const HostMain = () => {
   const { rtcEngine } = useEngine();
-  const { streams, addStream, removeStream, setPlay, resolution, play } = useStream();
+  const { streams, removeStream, setPlay, resolution, play } = useStream();
   const { profile } = useProfile();
   const { channel } = useSession();
-
-  useEffect(() => {
-    if (!rtcEngine) {
-      return;
-    }
-    const handle = async (event: MenuEventEnum) => {
-      switch (event) {
-        case MenuEventEnum.CreateWhiteboardLayer:
-          const windowInfoList = await rtcEngine.getScreenWindowsInfo();
-          if (windowInfoList && windowInfoList.length) {
-            const w = windowInfoList.find((v) => {
-              return v.name === WhiteboardTitle;
-            });
-            if (w) {
-              addStream(getLayerConfigFromWindowInfo(w, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY));
-            }
-          }
-          break;
-      }
-    };
-    rtcEngine.on(ChannelEnum.MenuControl, handle);
-    return () => {
-      rtcEngine.removeListener(ChannelEnum.MenuControl, handle);
-    };
-  }, [addStream, rtcEngine]);
 
   useEffect(() => {
     const handle = (data: { play: boolean }) => {
@@ -64,9 +37,9 @@ const HostMain = () => {
         }
       }
     };
-    rtcEngine?.on(ChannelEnum.PlayChannel, handle);
+    rtcEngine?.on(ChannelEnum.PlayOrStop, handle);
     return () => {
-      rtcEngine?.off(ChannelEnum.PlayChannel, handle);
+      rtcEngine?.off(ChannelEnum.PlayOrStop, handle);
     };
   }, [channel, profile, resolution, rtcEngine, setPlay, streams]);
 

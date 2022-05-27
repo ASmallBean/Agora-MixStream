@@ -25,7 +25,7 @@ import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
 import { findVideoStreamFromProfile } from '../../../services/api';
 import { addCloseHandle, appPath, isDev, removeCloseHandle } from '../../../utils';
-import { ChannelEnum } from '../../../utils/channel';
+import { GlobalEvent, globalEvent } from '../../../utils/event';
 import { WhiteboardTitle } from '../../Whiteboard';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
 import {
@@ -52,48 +52,50 @@ const HostMenu = () => {
     play,
     resolution,
     updateResolution,
-    whiteboard,
-    setWhiteboard,
     shareCamera,
     shareScreen,
-    shareWhiteboard,
+    whiteboardSharing,
     removeStream,
     addStream,
     setPlay,
+    freeCameraCaptureSource,
+    freeScreenCaptureSource,
     streams,
   } = useStream();
   const { sessionId, profileId } = useParams<{ sessionId: string; profileId: string }>();
   const [cameraVisible, setCameraVisible] = useState(false);
   const [screenVisible, setScreenVisible] = useState(false);
+  const [whiteboard, setWhiteboard] = useState(false);
   const [displayList, setDisplayList] = useState<DisplayInfo[]>([]);
   const [windowList, setWindowList] = useState<WindowInfo[]>([]);
 
   const onCameraSelected = useCallback(
     (deviceInfo: DeviceInfo, resolution: Resolution) => {
       setCameraVisible(false);
-      addStream(
-        getLayerConfigFromMediaDeviceInfo(
-          { ...deviceInfo, ...resolution },
-          VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY
-        )
-      );
+      if (freeCameraCaptureSource === null) {
+        return;
+      }
+      addStream(getLayerConfigFromMediaDeviceInfo({ ...deviceInfo, ...resolution }, freeCameraCaptureSource));
     },
-    [addStream]
+    [addStream, freeCameraCaptureSource]
   );
 
   const onScreenSelected = useCallback<ScreenSelectorHandler>(
     (type, data) => {
       setScreenVisible(false);
+      if (freeScreenCaptureSource === null) {
+        return;
+      }
       switch (type) {
         case ShareScreenType.Display:
-          addStream(getLayerConfigFromDisplayInfo(data as DisplayInfo, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY));
+          addStream(getLayerConfigFromDisplayInfo(data as DisplayInfo, freeScreenCaptureSource));
           break;
         case ShareScreenType.Window:
-          addStream(getLayerConfigFromWindowInfo(data as WindowInfo, VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY));
+          addStream(getLayerConfigFromWindowInfo(data as WindowInfo, freeScreenCaptureSource));
           break;
       }
     },
-    [addStream]
+    [addStream, freeScreenCaptureSource]
   );
 
   const openScreenSelector = () => {
@@ -119,7 +121,7 @@ const HostMenu = () => {
               const list = rtcEngine.getVideoDevices();
               const existList = streams.map((v) => v.deviceId);
               const result = list.filter((v) => !existList.includes(v.deviceid));
-              setCameraDevices(list || []);
+              setCameraDevices(result || []);
               setCameraVisible(true);
             }
           },
@@ -127,7 +129,7 @@ const HostMenu = () => {
         {
           label: intl.formatMessage({ id: 'host.menu.layer.screen' }),
           key: 'screen',
-          disabled: play,
+          disabled: !shareScreen || play,
           onClick: () => {
             setLoading(true);
             setTimeout(() => {
@@ -138,7 +140,7 @@ const HostMenu = () => {
         {
           label: intl.formatMessage({ id: 'host.menu.layer.whiteboard' }),
           key: 'whiteboard',
-          disabled: !whiteboard || !shareWhiteboard || play,
+          disabled: !whiteboard || whiteboardSharing || !shareScreen || play,
           onClick: () => {
             if (rtcEngine) {
               setLoading(true);
@@ -178,6 +180,20 @@ const HostMenu = () => {
 
   useEffect(() => {
     const handle = () => {
+      setWhiteboard(false);
+      whiteboardRef.current?.destroyWindow();
+      whiteboardRef.current = null;
+      const item = streams.find((v) => v.name === WhiteboardTitle);
+      item && removeStream(item.sourceType);
+    };
+    globalEvent.on(GlobalEvent.WhiteboardWindowClosed, handle);
+    return () => {
+      globalEvent.off(GlobalEvent.WhiteboardWindowClosed, handle);
+    };
+  }, [removeStream, streams]);
+
+  useEffect(() => {
+    const handle = () => {
       if (whiteboardRef.current) {
         whiteboardRef.current.destroyWindow();
       }
@@ -208,10 +224,7 @@ const HostMenu = () => {
               }
               browserWindow.on('close', (e) => {
                 e.preventDefault();
-                setWhiteboard(false);
-                whiteboardRef.current?.destroyWindow();
-                whiteboardRef.current = null;
-                removeStream(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY);
+                globalEvent?.emit(GlobalEvent.WhiteboardWindowClosed);
               });
               setWhiteboard(true);
             });
@@ -289,7 +302,7 @@ const HostMenu = () => {
           id: 'host.menu.quit.channel',
         })}
         onClick={() => {
-          rtcEngine?.emit(ChannelEnum.QuitChannel);
+          globalEvent.emit(GlobalEvent.QuitChannel);
         }}
       >
         <BsBoxArrowLeft size={21} />

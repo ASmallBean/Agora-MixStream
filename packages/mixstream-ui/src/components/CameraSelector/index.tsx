@@ -44,22 +44,35 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
     }
   };
 
-  const renderHandle = useCallback(async () => {
+  const renderHandle = useCallback(
+    (deviceId: string, resolution: string) => {
+      if (deviceId && freeCameraCaptureSource !== null && domRef.current) {
+        rtcEngine?.stopCameraCapture(freeCameraCaptureSource);
+        rtcEngine?.startCameraCapture(freeCameraCaptureSource, deviceId, resolutionMap[resolution]);
+        rtcEngine?.setupLocalView(
+          0,
+          freeCameraCaptureSource === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1,
+          domRef.current
+        );
+      }
+    },
+    [freeCameraCaptureSource, rtcEngine]
+  );
+
+  const onFinish = useCallback(async () => {
     if (domRef.current && rtcEngine && freeCameraCaptureSource !== null) {
       const value = await form.validateFields();
       const { deviceId, resolution } = value;
-      rtcEngine.startCameraCapture(freeCameraCaptureSource, deviceId, resolutionMap[resolution]);
-      rtcEngine.setupLocalView(
-        0,
-        freeCameraCaptureSource === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1,
-        domRef.current
-      );
+      renderHandle(deviceId, resolution);
     }
-  }, [form, freeCameraCaptureSource, rtcEngine]);
+  }, [form, freeCameraCaptureSource, renderHandle, rtcEngine]);
 
   useEffect(() => {
-    if (visible && devices && devices.length) {
-      const defaultDevice = devices[0].deviceid;
+    if (visible) {
+      let defaultDevice = '';
+      if (devices && devices.length) {
+        defaultDevice = devices[0].deviceid;
+      }
       form.setFieldsValue({ deviceId: defaultDevice, resolution: resolutionOptions[0].value });
       form.submit();
       return;
@@ -86,9 +99,16 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
       onCancel={onCancel}
     >
       <div className="camera-container" ref={domRef}></div>
-      <Form form={form} name="camera" onFinish={renderHandle}>
+      <Form
+        form={form}
+        name="camera"
+        onFinish={onFinish}
+        onValuesChange={(_, value) => {
+          renderHandle(value.deviceId, value.resolution);
+        }}
+      >
         <FormItem label={intl.formatMessage({ id: 'modal.camera.selector.device' })} name="deviceId" {...formLayout}>
-          <Select onChange={renderHandle}>
+          <Select>
             {devices.map((item) => {
               return (
                 <Option key={item.deviceid} value={item.deviceid}>
@@ -103,7 +123,7 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
           name="resolution"
           {...formLayout}
         >
-          <Select onChange={renderHandle}>
+          <Select>
             {resolutionOptions.map((item) => {
               return (
                 <Option key={item.value} value={item.value}>

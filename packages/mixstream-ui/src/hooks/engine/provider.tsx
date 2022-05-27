@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUnmount } from 'react-use';
 import { RtcEngine } from '../../engine';
 import { findVideoStreamFromProfile } from '../../services/api';
-import { ChannelEnum } from '../../utils/channel';
+import { GlobalEvent, globalEvent } from '../../utils/event';
 import { useProfile } from '../profile';
 import { useSession } from '../session';
 import { EnginesContext } from './context';
@@ -27,17 +27,14 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   }, [profile, session, rtcEngine]);
 
   useEffect(() => {
-    if (!rtcEngine) {
-      return;
-    }
     const handle = () => {
       navigator('/');
     };
-    rtcEngine.on(ChannelEnum.QuitChannel, handle);
+    globalEvent.on(GlobalEvent.QuitChannel, handle);
     return () => {
-      rtcEngine.off(ChannelEnum.QuitChannel, handle);
+      globalEvent.off(GlobalEvent.QuitChannel, handle);
     };
-  }, [navigator, rtcEngine]);
+  }, [navigator]);
 
   useUnmount(async () => {
     rtcEngine?.leaveChannel();

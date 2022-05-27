@@ -1,3 +1,4 @@
+export * from './event';
 export * from './gracefulClose';
 export * from './os';
 export * from './request';

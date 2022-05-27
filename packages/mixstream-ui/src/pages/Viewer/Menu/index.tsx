@@ -1,17 +1,15 @@
 import { Button } from 'antd';
 import { useIntl } from 'react-intl';
-import { useEngine } from '../../../hooks/engine';
-import { ChannelEnum } from '../../../utils/channel';
+import { GlobalEvent, globalEvent } from '../../../utils';
 import './index.css';
 
 const ViewMenu = () => {
   const intl = useIntl();
-  const { rtcEngine } = useEngine();
   return (
     <div className="viewer-menu">
       <Button
         onClick={() => {
-          rtcEngine?.emit(ChannelEnum.QuitChannel);
+          globalEvent?.emit(GlobalEvent.QuitChannel);
         }}
       >
         {intl.formatMessage({

@@ -170,6 +170,7 @@ export class RtcEngine extends EventEmitter {
   }
 
   startCameraCapture(type: VIDEO_SOURCE_TYPE, deviceId: string, option?: Partial<VideoFormat>): number {
+    console.log('🚀 startCameraCapture ~ type', type, deviceId);
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY;
     const config = {
       deviceId: deviceId,
@@ -197,6 +198,7 @@ export class RtcEngine extends EventEmitter {
   }
 
   stopCameraCapture(type: VIDEO_SOURCE_TYPE): number {
+    console.log('🚀 startScreenCapture ~ type', type);
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY;
     const code = isPrimary ? this._rtcEngine.stopPrimaryCameraCapture() : this._rtcEngine.stopSecondaryCameraCapture();
     if (code !== 0) {
@@ -206,6 +208,7 @@ export class RtcEngine extends EventEmitter {
   }
 
   startScreenCapture(type: VIDEO_SOURCE_TYPE, config: ScreenCaptureConfiguration) {
+    console.log('🚀 startScreenCapture ~ type', type);
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY;
     let code = isPrimary
       ? this._rtcEngine.startPrimaryScreenCapture(config)
@@ -221,6 +224,7 @@ export class RtcEngine extends EventEmitter {
   }
 
   stopScreenCapture(type: VIDEO_SOURCE_TYPE): number {
+    console.log('🚀 stopScreenCapture ~ type', type);
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY;
     const code = isPrimary ? this._rtcEngine.stopPrimaryScreenCapture() : this._rtcEngine.stopSecondaryScreenCapture();
     if (code !== 0) {

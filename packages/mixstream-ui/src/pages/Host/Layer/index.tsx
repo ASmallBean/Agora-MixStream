@@ -1,7 +1,7 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
 import { FC, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
-import { useMount, useWindowSize } from 'react-use';
+import { useMount, useUnmount, useWindowSize } from 'react-use';
 import {
   DeviceInfo,
   DisplayInfo,
@@ -9,7 +9,7 @@ import {
   RtcEngine,
   ScreenCaptureFullScreenRect,
   VIDEO_SOURCE_TYPE,
-  WindowInfo,
+  WindowInfo
 } from '../../../engine';
 import { useStream } from '../../../hooks/stream';
 import './index.css';
@@ -21,6 +21,7 @@ export enum LayerType {
 export interface LayerConfig {
   type: LayerType;
   sourceType: VIDEO_SOURCE_TYPE;
+  name: string;
 
   deviceId: string; // 摄像头的id
   zOrder: number; // default: 300
@@ -219,10 +220,10 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
               return {
                 ...computeEquidistantSize(
                   { width, height },
-                  { maxWidth: canvasSize.width * 0.5, maxHeight: canvasSize.height * 0.5 }
+                  { maxWidth: canvasSize.width * 0.7, maxHeight: canvasSize.height * 0.7 }
                 ),
                 left: 0,
-                top: canvasSize.height * 0.5,
+                top: canvasSize.height * 0.3,
                 zIndex: 50,
               };
             default:
@@ -273,10 +274,17 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     }
   });
 
+  useUnmount(() => {
+    if (data.sourceType >= 2) {
+      rtcEngine?.stopScreenCapture(data.sourceType);
+    } else {
+      rtcEngine?.stopCameraCapture(data.sourceType);
+    }
+  });
+
   const handleItemRemove = useCallback(
     (item: ItemParams) => {
-      const { event, props } = item;
-      console.log(event, props);
+      const { event } = item;
       event.preventDefault();
       remove(data.sourceType);
     },
@@ -305,6 +313,7 @@ export const getLayerConfigFromDisplayInfo = (
 ): LayerConfig => {
   const { id, width, height, x, y } = data.displayId;
   return {
+    name: `Desktop ${id}`,
     type: LayerType.SCREEN,
     displayId: id,
     sourceType,
@@ -334,6 +343,7 @@ export const getLayerConfigFromWindowInfo = (
 ): LayerConfig => {
   const { width, height, x, y } = data;
   return {
+    name: data.name,
     type: LayerType.SCREEN,
     sourceType,
     isCaptureWindow: true,
@@ -364,6 +374,7 @@ export const getLayerConfigFromMediaDeviceInfo = (
 ): LayerConfig => {
   const { deviceid, width, height } = data;
   return {
+    name: data.devicename,
     type: LayerType.CAMERA,
     deviceId: deviceid,
     x: 0,

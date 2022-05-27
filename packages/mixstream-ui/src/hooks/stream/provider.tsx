@@ -1,6 +1,7 @@
 import { FC, PropsWithChildren, useCallback, useMemo, useState } from 'react';
 import { bitrateList, VIDEO_SOURCE_TYPE } from '../../engine';
 import { LayerConfig } from '../../pages/Host/Layer';
+import { WhiteboardTitle } from '../../pages/Whiteboard';
 import { StreamContext } from './context';
 
 export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
@@ -8,16 +9,12 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const [resolution, setResolution] = useState(bitrateList[0]);
   const [play, setPlay] = useState(false);
   const [audio, setAudio] = useState(true);
-  const [whiteboard, setWhiteboard] = useState(false);
-
   const shareScreen = useMemo(() => {
-    // 屏幕占用 sourceType = 2 的频道流
-    return !streams.some((v) => v.sourceType === 2);
+    return streams.filter((v) => v.sourceType >= 2).length < 2;
   }, [streams]);
 
-  const shareWhiteboard = useMemo(() => {
-    // 屏幕占用 sourceType = 3 的频道流
-    return !streams.some((v) => v.sourceType === 3);
+  const whiteboardSharing = useMemo(() => {
+    return streams.some((v) => v.name === WhiteboardTitle);
   }, [streams]);
 
   const shareCamera = useMemo(() => {
@@ -39,6 +36,9 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
     }
     return arr.some((v) => v.sourceType === 0) ? 1 : 0;
   }, [streams]);
+
+  console.log('🖥 freeScreenCaptureSource', freeScreenCaptureSource);
+  console.log('📹 freeCameraCaptureSource', freeCameraCaptureSource);
 
   const addStream = useCallback((data: LayerConfig) => {
     setStreams((pre) => {
@@ -110,8 +110,6 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
         setPlay,
         audio,
         setAudio,
-        whiteboard,
-        setWhiteboard,
         resolution,
         updateResolution,
         streams,
@@ -120,7 +118,7 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
         updateStreams,
         shareCamera,
         shareScreen,
-        shareWhiteboard,
+        whiteboardSharing,
         freeCameraCaptureSource,
         freeScreenCaptureSource,
       }}

@@ -1,4 +1,13 @@
-import { MEDIA_SOURCE_TYPE, Resolution, VIDEO_SOURCE_TYPE } from './type';
+import { LocalTranscoderConfiguration, VideoEncoderConfiguration } from 'agora-electron-sdk/types/Api/native_type';
+import { LayerConfig } from '../pages/Host/Layer';
+import {
+  DEGRADATION_PREFERENCE,
+  MEDIA_SOURCE_TYPE,
+  ORIENTATION_MODE,
+  Resolution,
+  VIDEO_MIRROR_MODE_TYPE,
+  VIDEO_SOURCE_TYPE,
+} from './type';
 
 export const ScreenCaptureFullScreenRect = {
   width: 0,
@@ -54,3 +63,43 @@ const video2MediaMap: { [key: number]: number } = {
 export const videoSource2MediaSource = (videoSourceType: VIDEO_SOURCE_TYPE) => {
   return video2MediaMap[videoSourceType];
 };
+
+export function layer2TranscodingConfig(
+  layers: LayerConfig[],
+  options?: Partial<VideoEncoderConfiguration>
+): LocalTranscoderConfiguration {
+  console.log('🚀 ~ layers', layers);
+  const outputStreams = layers.map((v) => {
+    const { sourceType, x, y, width, height, zOrder } = v;
+    return {
+      sourceType: videoSource2MediaSource(sourceType),
+      x,
+      y,
+      width,
+      height,
+      zOrder,
+      remoteUserUid: 0,
+      imageUrl: '',
+      alpha: 1,
+      mirror: true,
+    };
+  });
+
+  const result: LocalTranscoderConfiguration = {
+    streamCount: outputStreams.length,
+    videoInputStreams: outputStreams,
+    videoOutputConfiguration: {
+      codecType: 1,
+      bitrate: 2080,
+      width: 1920,
+      height: 1080,
+      frameRate: 15,
+      minBitrate: 520,
+      orientationMode: ORIENTATION_MODE.ORIENTATION_MODE_ADAPTIVE,
+      degradationPreference: DEGRADATION_PREFERENCE.MAINTAIN_QUALITY,
+      mirrorMode: VIDEO_MIRROR_MODE_TYPE.VIDEO_MIRROR_MODE_AUTO,
+      ...options,
+    } as any,
+  };
+  return result;
+}

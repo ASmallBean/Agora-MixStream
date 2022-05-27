@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import { RtcEngineControl } from '../../engine';
+import { RtcEngine } from '../../engine';
 
 export const EnginesContext = createContext<{
-  rtcEngine?: RtcEngineControl;
+  rtcEngine?: RtcEngine;
 }>({});

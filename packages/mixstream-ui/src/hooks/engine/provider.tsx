@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUnmount } from 'react-use';
-import { RtcEngineControl } from '../../engine';
+import { RtcEngine } from '../../engine';
 import { findVideoStreamFromProfile } from '../../services/api';
 import { ChannelEnum } from '../../utils/channel';
 import { useProfile } from '../profile';
@@ -9,7 +9,7 @@ import { useSession } from '../session';
 import { EnginesContext } from './context';
 
 export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
-  const [rtcEngine, setRtcEngine] = useState<RtcEngineControl>();
+  const [rtcEngine, setRtcEngine] = useState<RtcEngine>();
   const { profile } = useProfile();
   const session = useSession();
   const navigator = useNavigate();
@@ -21,7 +21,7 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
       return;
     }
     const { appId } = stream;
-    const engine = RtcEngineControl.singleton(appId);
+    const engine = RtcEngine.singleton(appId);
     engine.engineInit();
     setRtcEngine(engine);
   }, [profile, session, rtcEngine]);
@@ -40,7 +40,7 @@ export const EnginesProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   }, [navigator, rtcEngine]);
 
   useUnmount(async () => {
-    rtcEngine?.leaveTransCoderChannel();
+    rtcEngine?.leaveChannel();
   });
 
   return (

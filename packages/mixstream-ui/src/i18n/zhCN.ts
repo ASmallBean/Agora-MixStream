@@ -21,6 +21,7 @@ const message = {
   'modal.camera.selector.resolution': '分辨率',
   'modal.camera.selector.device': '设备',
   'modal.camera.selector.ok': '确认',
+  'modal.camera.selector.error.device': '没有找到可用的摄像头设备',
   'message.permissions.screen': '没有屏幕录制权限',
   'host.menu.layer.new': '新增图层',
   'host.menu.layer.camera': '摄像头',

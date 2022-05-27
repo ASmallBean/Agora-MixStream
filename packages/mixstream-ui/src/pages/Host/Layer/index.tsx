@@ -6,7 +6,7 @@ import {
   DeviceInfo,
   DisplayInfo,
   resolutionFormate,
-  RtcEngineControl,
+  RtcEngine,
   ScreenCaptureFullScreenRect,
   VIDEO_SOURCE_TYPE,
   WindowInfo,
@@ -59,7 +59,7 @@ interface Layout extends Size {
 interface LayerProps {
   className?: string;
   data: LayerConfig;
-  rtcEngine?: RtcEngineControl;
+  rtcEngine?: RtcEngine;
   remove: (config: LayerConfig['sourceType']) => void;
 }
 

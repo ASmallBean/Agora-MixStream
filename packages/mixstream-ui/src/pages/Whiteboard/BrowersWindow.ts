@@ -30,7 +30,6 @@ class WhiteboardBrowserWindow {
         enableRemoteModule: true,
         contextIsolation: false,
       },
-      parent: remote.getCurrentWindow(),
       transparent: true,
       frame: false,
       enableLargerThanScreen: true,

@@ -1,8 +1,8 @@
-import { Form, Modal, Select } from 'antd';
+import { Form, message, Modal, Select } from 'antd';
 import FormItem from 'antd/lib/form/FormItem';
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useRef } from 'react';
 import { useIntl } from 'react-intl';
-import { DeviceInfo, resolutionMap, RtcEngineEvents, VIDEO_SOURCE_TYPE } from '../../engine';
+import { DeviceInfo, resolutionMap, VIDEO_SOURCE_TYPE } from '../../engine';
 import { useEngine } from '../../hooks/engine';
 import { useStream } from '../../hooks/stream';
 import './index.css';
@@ -11,6 +11,7 @@ export interface CameraSelectorProps {
   onCancel: () => void;
   onSuccess: (device: DeviceInfo, resolution: { width: number; height: number }) => void;
   visible: boolean;
+  devices: DeviceInfo[];
 }
 const { Option } = Select;
 
@@ -27,13 +28,12 @@ const formLayout = {
 };
 
 const CameraSelector: FC<CameraSelectorProps> = (props) => {
-  const { onCancel, onSuccess, visible } = props;
+  const { onCancel, onSuccess, visible, devices } = props;
   const intl = useIntl();
   const { rtcEngine } = useEngine();
   const { freeCameraCaptureSource } = useStream();
   const domRef = useRef<HTMLDivElement>(null);
   const [form] = Form.useForm<CameraForm>();
-  const [devices, setDevices] = useState<DeviceInfo[]>([]);
 
   const onSelectedHandle = async () => {
     const value = await form.validateFields();
@@ -58,34 +58,22 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
   }, [form, freeCameraCaptureSource, rtcEngine]);
 
   useEffect(() => {
-    if (!rtcEngine) {
-      return;
-    }
-    if (visible) {
-      const list = rtcEngine.getVideoDevices();
-      if (list && list.length) {
-        setDevices(list);
-        const deviceId = form.getFieldValue('deviceId');
-        if (deviceId === '' || !list.some((v) => v.deviceid === deviceId)) {
-          form.setFieldsValue({ deviceId: list[0].deviceid, resolution: resolutionOptions[0].value });
-        }
-      }
+    if (visible && devices && devices.length) {
+      const defaultDevice = devices[0].deviceid;
+      form.setFieldsValue({ deviceId: defaultDevice, resolution: resolutionOptions[0].value });
       form.submit();
       return;
     }
-  }, [form, freeCameraCaptureSource, rtcEngine, visible]);
+  }, [devices, form, visible]);
 
   useEffect(() => {
-    const handle = () => {
-      if (rtcEngine) {
-        setDevices(rtcEngine.getVideoDevices());
+    if (visible) {
+      if (!devices || devices.length === 0) {
+        message.warn(intl.formatMessage({ id: 'modal.camera.selector.error.device' }));
+        return;
       }
-    };
-    rtcEngine?.on(RtcEngineEvents.VIDEO_DEVICE_STATE_CHANGED, handle);
-    return () => {
-      rtcEngine?.off(RtcEngineEvents.VIDEO_DEVICE_STATE_CHANGED, handle);
-    };
-  }, [rtcEngine]);
+    }
+  }, [devices, intl, visible]);
 
   return (
     <Modal

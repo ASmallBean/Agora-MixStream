@@ -24,7 +24,7 @@ import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
 import { findVideoStreamFromProfile } from '../../../services/api';
-import { hostPath, isDev } from '../../../utils';
+import { addCloseHandle, appPath, isDev, removeCloseHandle } from '../../../utils';
 import { ChannelEnum } from '../../../utils/channel';
 import { WhiteboardTitle } from '../../Whiteboard';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
@@ -43,6 +43,8 @@ const HostMenu = () => {
   const { setLoading } = useGlobal();
   const { channel } = useSession();
   const { profile } = useProfile();
+
+  const [cameraDevices, setCameraDevices] = useState<DeviceInfo[]>([]);
   const whiteboardRef = useRef<WhiteboardBrowserWindow | null>(null);
   const {
     audio,
@@ -113,13 +115,19 @@ const HostMenu = () => {
           key: 'camera',
           disabled: !shareCamera || play,
           onClick: () => {
-            setCameraVisible(true);
+            if (rtcEngine) {
+              const list = rtcEngine.getVideoDevices();
+              const existList = streams.map((v) => v.deviceId);
+              const result = list.filter((v) => !existList.includes(v.deviceid));
+              setCameraDevices(list || []);
+              setCameraVisible(true);
+            }
           },
         },
         {
           label: intl.formatMessage({ id: 'host.menu.layer.screen' }),
           key: 'screen',
-          disabled: !shareScreen || play,
+          disabled: play,
           onClick: () => {
             setLoading(true);
             setTimeout(() => {
@@ -168,6 +176,18 @@ const HostMenu = () => {
     }
   });
 
+  useEffect(() => {
+    const handle = () => {
+      if (whiteboardRef.current) {
+        whiteboardRef.current.destroyWindow();
+      }
+    };
+    addCloseHandle('destroy-whiteboard', handle);
+    return () => {
+      removeCloseHandle('destroy-whiteboard', handle);
+    };
+  });
+
   return (
     <div className="host-menu">
       <Dropdown overlay={createLayerMenu} placement="bottomLeft">
@@ -179,11 +199,12 @@ const HostMenu = () => {
           if (sessionId && profileId) {
             whiteboardRef.current = WhiteboardBrowserWindow.singleton();
             whiteboardRef.current.create().then((browserWindow) => {
+              const hash = `/session/${sessionId}/profile/${profileId}/whiteboard`;
+              const path = appPath();
               if (isDev) {
-                browserWindow.loadURL(hostPath());
+                browserWindow.loadURL(`${path}#${hash}`);
               } else {
-                const hash = `/session/${sessionId}/profile/${profileId}/whiteboard`;
-                browserWindow.loadFile('build/index.html', { hash });
+                browserWindow.loadFile(path, { hash });
               }
               browserWindow.on('close', (e) => {
                 e.preventDefault();
@@ -215,6 +236,7 @@ const HostMenu = () => {
           );
         })}
       </Select>
+      {/* 音频开关 */}
       <Button
         title={intl.formatMessage({
           id: audio ? 'host.menu.audio.off' : 'host.menu.audio.on',
@@ -230,6 +252,7 @@ const HostMenu = () => {
       >
         {audio ? <AiOutlineAudio size={20} /> : <AiOutlineAudioMuted size={20} />}
       </Button>
+      {/* 播放开关 */}
       <Button
         title={intl.formatMessage({
           id: play ? 'host.menu.play.off' : 'host.menu.play.on',
@@ -244,10 +267,13 @@ const HostMenu = () => {
               }
               const { token, uid } = stream;
               const options = resolutionFormate(resolution);
-              code = rtcEngine.play({ token, channel, uid }, streams, { bitrate: bitrateMap[resolution], ...options });
+              code = rtcEngine.beginPlay({ token, channel, uid }, streams, {
+                bitrate: bitrateMap[resolution],
+                ...options,
+              });
             } else {
               // 停止推流
-              code = rtcEngine.stop();
+              code = rtcEngine.stopPlay();
             }
             if (code === 0) {
               setPlay((pre) => !pre);
@@ -257,6 +283,7 @@ const HostMenu = () => {
       >
         {play ? <AiOutlinePauseCircle size={22} /> : <AiOutlinePlayCircle size={22} />}
       </Button>
+      {/* 退出频道 */}
       <Button
         title={intl.formatMessage({
           id: 'host.menu.quit.channel',
@@ -272,6 +299,7 @@ const HostMenu = () => {
         onCancel={() => {
           setCameraVisible(false);
         }}
+        devices={cameraDevices}
         onSuccess={onCameraSelected}
       />
       <ScreenSelector

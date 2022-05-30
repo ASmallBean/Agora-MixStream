@@ -4,6 +4,7 @@ import { useGlobal } from '../../hooks/global/useGlobal';
 import { useProfile } from '../../hooks/profile';
 export const WhiteboardTitle = 'MixStream-Whiteboard';
 
+const styles = { width: '100vw', height: '100vh', paddingTop: 32 };
 const WhiteboardMain = () => {
   const [app, setApp] = useState<FastboardApp>();
   const appInstance = useRef<FastboardApp>();
@@ -49,7 +50,7 @@ const WhiteboardMain = () => {
   }, [profile]);
 
   return (
-    <div style={{ width: '100vw', height: 'calc(100vh - 32px)', marginTop: 32 }}>
+    <div style={styles}>
       <Fastboard app={app} config={{ toolbar: { apps: { enable: false } } }} />
     </div>
   );

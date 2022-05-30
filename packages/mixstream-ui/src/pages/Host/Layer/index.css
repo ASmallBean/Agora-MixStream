@@ -8,4 +8,5 @@
   min-height: 10%;
   border: 1px solid #cf1717;
   overflow: auto;
+  overflow: hidden;
 }

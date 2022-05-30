@@ -14,7 +14,6 @@ import {
   WindowInfo,
 } from '../../../engine';
 import { useStream } from '../../../hooks/stream';
-import { isWindows } from '../../../utils';
 import './index.css';
 
 export enum LayerType {
@@ -296,7 +295,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
 
   return (
     <div
-      className={cls({ layer: 1, container: 1, [className || '']: !!className, mirror: isWindows() })}
+      className={cls({ layer: 1, container: 1, [className || '']: !!className })}
       style={layout}
       onContextMenu={handleContextMenu}
       ref={domRef}

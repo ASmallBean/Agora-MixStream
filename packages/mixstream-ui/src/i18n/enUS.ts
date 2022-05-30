@@ -23,6 +23,8 @@ const message = {
   'modal.camera.selector.ok': 'OK',
   'modal.camera.selector.error.device': 'Could not find the available camera equipment.',
   'message.permissions.screen': 'No Screen Recording Permissions',
+  'viewer.menu.roomName': 'RoomName',
+  'host.menu.roomName': 'RoomName',
   'host.menu.layer.new': 'New Layer',
   'host.menu.layer.camera': 'Camera',
   'host.menu.layer.screen': 'Screen',

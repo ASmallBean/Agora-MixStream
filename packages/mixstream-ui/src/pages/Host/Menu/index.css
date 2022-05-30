@@ -8,3 +8,12 @@
 .host-menu > * {
   margin: 0 10px;
 }
+
+.host-menu .quiteChannel {
+  display: flex;
+  cursor: pointer;
+}
+
+.host-menu .quiteChannel .roomName {
+  margin-right: 10px;
+}

@@ -16,8 +16,8 @@ export interface StreamContextProps {
   shareCamera: boolean;
   shareScreen: boolean;
   whiteboardSharing: boolean;
-  freeCameraCaptureSource: VIDEO_SOURCE_TYPE | null;
-  freeScreenCaptureSource: VIDEO_SOURCE_TYPE | null;
+  freeCameraCaptureSource: VIDEO_SOURCE_TYPE[];
+  freeScreenCaptureSource: VIDEO_SOURCE_TYPE[];
 }
 
 export const StreamContext = createContext<StreamContextProps>({
@@ -34,6 +34,6 @@ export const StreamContext = createContext<StreamContextProps>({
   shareScreen: false,
   shareCamera: false,
   whiteboardSharing: false,
-  freeCameraCaptureSource: null,
-  freeScreenCaptureSource: null,
+  freeCameraCaptureSource: [],
+  freeScreenCaptureSource: [],
 });

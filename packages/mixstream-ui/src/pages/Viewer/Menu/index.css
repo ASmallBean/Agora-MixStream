@@ -8,3 +8,12 @@
 .viewer-menu > * {
   margin: 0 10px;
 }
+
+.viewer-menu .quiteChannel {
+  display: flex;
+  cursor: pointer;
+}
+
+.viewer-menu .quiteChannel .roomName {
+  margin-right: 10px;
+}

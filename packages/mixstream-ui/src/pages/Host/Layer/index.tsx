@@ -1,7 +1,7 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
 import { FC, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
-import { useMount, useUnmount, useWindowSize } from 'react-use';
+import { useMount, useWindowSize } from 'react-use';
 import {
   DeviceInfo,
   DisplayInfo,
@@ -9,7 +9,7 @@ import {
   RtcEngine,
   ScreenCaptureFullScreenRect,
   VIDEO_SOURCE_TYPE,
-  WindowInfo
+  WindowInfo,
 } from '../../../engine';
 import { useStream } from '../../../hooks/stream';
 import './index.css';
@@ -271,14 +271,6 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
       } else {
         setupCameraLocalView(domRef.current, data);
       }
-    }
-  });
-
-  useUnmount(() => {
-    if (data.sourceType >= 2) {
-      rtcEngine?.stopScreenCapture(data.sourceType);
-    } else {
-      rtcEngine?.stopCameraCapture(data.sourceType);
     }
   });
 

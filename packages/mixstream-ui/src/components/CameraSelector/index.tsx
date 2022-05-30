@@ -1,6 +1,6 @@
 import { Form, message, Modal, Select } from 'antd';
 import FormItem from 'antd/lib/form/FormItem';
-import { FC, useCallback, useEffect, useRef } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useIntl } from 'react-intl';
 import { DeviceInfo, resolutionMap, VIDEO_SOURCE_TYPE } from '../../engine';
 import { useEngine } from '../../hooks/engine';
@@ -34,7 +34,7 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
   const { freeCameraCaptureSource } = useStream();
   const domRef = useRef<HTMLDivElement>(null);
   const [form] = Form.useForm<CameraForm>();
-
+  const sourceTypeRef = useRef<VIDEO_SOURCE_TYPE | null>(null);
   const onSelectedHandle = async () => {
     const value = await form.validateFields();
     const { deviceId, resolution } = value;
@@ -44,20 +44,38 @@ const CameraSelector: FC<CameraSelectorProps> = (props) => {
     }
   };
 
+  const sourceType = useMemo(() => {
+    if (freeCameraCaptureSource.length) {
+      sourceTypeRef.current = freeCameraCaptureSource.includes(sourceTypeRef.current as VIDEO_SOURCE_TYPE)
+        ? sourceTypeRef.current
+        : freeCameraCaptureSource[0];
+    } else {
+      sourceTypeRef.current = null;
+    }
+    return sourceTypeRef.current;
+  }, [freeCameraCaptureSource]);
+
   const renderHandle = useCallback(
     (deviceId: string, resolution: string) => {
-      if (deviceId && freeCameraCaptureSource !== null && domRef.current) {
-        rtcEngine?.stopCameraCapture(freeCameraCaptureSource);
-        rtcEngine?.startCameraCapture(freeCameraCaptureSource, deviceId, resolutionMap[resolution]);
+      if (deviceId && sourceType !== null && domRef.current) {
+        rtcEngine?.stopCameraCapture(sourceType);
+        rtcEngine?.startCameraCapture(sourceType, deviceId, resolutionMap[resolution]);
         rtcEngine?.setupLocalView(
           0,
-          freeCameraCaptureSource === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1,
+          sourceType === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY ? 0 : 1,
           domRef.current
         );
       }
     },
-    [freeCameraCaptureSource, rtcEngine]
+    [rtcEngine, sourceType]
   );
+
+  useEffect(() => {
+    if (!visible) {
+      console.log('🚀 ~ stopCameraCapture ~ sourceType', sourceType);
+      sourceType !== null && rtcEngine?.stopCameraCapture(sourceType);
+    }
+  }, [rtcEngine, sourceType, visible]);
 
   const onFinish = useCallback(async () => {
     if (domRef.current && rtcEngine && freeCameraCaptureSource !== null) {

@@ -9,6 +9,7 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const [resolution, setResolution] = useState(bitrateList[0]);
   const [play, setPlay] = useState(false);
   const [audio, setAudio] = useState(true);
+
   const shareScreen = useMemo(() => {
     return streams.filter((v) => v.sourceType >= 2).length < 2;
   }, [streams]);
@@ -22,23 +23,14 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   }, [streams]);
 
   const freeScreenCaptureSource = useMemo(() => {
-    const arr = streams.filter((v) => v.sourceType >= 2);
-    if (arr.length === 2) {
-      return null;
-    }
-    return arr.some((v) => v.sourceType === 2) ? 3 : 2;
+    const arr = streams.filter((v) => v.sourceType >= 2).map((v) => v.sourceType);
+    return [2, 3].filter((v) => !arr.includes(v));
   }, [streams]);
 
   const freeCameraCaptureSource = useMemo(() => {
-    const arr = streams.filter((v) => v.sourceType <= 2);
-    if (arr.length === 2) {
-      return null;
-    }
-    return arr.some((v) => v.sourceType === 0) ? 1 : 0;
+    const arr = streams.filter((v) => v.sourceType < 2).map((v) => v.sourceType);
+    return [0, 1].filter((v) => !arr.includes(v));
   }, [streams]);
-
-  console.log('🖥 freeScreenCaptureSource', freeScreenCaptureSource);
-  console.log('📹 freeCameraCaptureSource', freeCameraCaptureSource);
 
   const addStream = useCallback((data: LayerConfig) => {
     setStreams((pre) => {

@@ -42,6 +42,7 @@ const HostMenu = () => {
   const { rtcEngine } = useEngine();
   const { setLoading } = useGlobal();
   const { channel } = useSession();
+
   const { profile } = useProfile();
 
   const [cameraDevices, setCameraDevices] = useState<DeviceInfo[]>([]);
@@ -72,10 +73,9 @@ const HostMenu = () => {
   const onCameraSelected = useCallback(
     (deviceInfo: DeviceInfo, resolution: Resolution) => {
       setCameraVisible(false);
-      if (freeCameraCaptureSource === null) {
-        return;
+      if (freeCameraCaptureSource.length) {
+        addStream(getLayerConfigFromMediaDeviceInfo({ ...deviceInfo, ...resolution }, freeCameraCaptureSource[0]));
       }
-      addStream(getLayerConfigFromMediaDeviceInfo({ ...deviceInfo, ...resolution }, freeCameraCaptureSource));
     },
     [addStream, freeCameraCaptureSource]
   );
@@ -83,16 +83,15 @@ const HostMenu = () => {
   const onScreenSelected = useCallback<ScreenSelectorHandler>(
     (type, data) => {
       setScreenVisible(false);
-      if (freeScreenCaptureSource === null) {
-        return;
-      }
-      switch (type) {
-        case ShareScreenType.Display:
-          addStream(getLayerConfigFromDisplayInfo(data as DisplayInfo, freeScreenCaptureSource));
-          break;
-        case ShareScreenType.Window:
-          addStream(getLayerConfigFromWindowInfo(data as WindowInfo, freeScreenCaptureSource));
-          break;
+      if (freeScreenCaptureSource.length) {
+        switch (type) {
+          case ShareScreenType.Display:
+            addStream(getLayerConfigFromDisplayInfo(data as DisplayInfo, freeScreenCaptureSource[0]));
+            break;
+          case ShareScreenType.Window:
+            addStream(getLayerConfigFromWindowInfo(data as WindowInfo, freeScreenCaptureSource[0]));
+            break;
+        }
       }
     },
     [addStream, freeScreenCaptureSource]
@@ -298,6 +297,7 @@ const HostMenu = () => {
       </Button>
       {/* 退出频道 */}
       <Button
+        className="quiteChannel"
         title={intl.formatMessage({
           id: 'host.menu.quit.channel',
         })}
@@ -305,6 +305,9 @@ const HostMenu = () => {
           globalEvent.emit(GlobalEvent.QuitChannel);
         }}
       >
+        <div className="roomName">
+          {intl.formatMessage({ id: 'host.menu.roomName' })}: {channel}
+        </div>
         <BsBoxArrowLeft size={21} />
       </Button>
       <CameraSelector

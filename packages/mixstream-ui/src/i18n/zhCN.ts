@@ -23,6 +23,8 @@ const message = {
   'modal.camera.selector.ok': '确认',
   'modal.camera.selector.error.device': '没有找到可用的摄像头设备',
   'message.permissions.screen': '没有屏幕录制权限',
+  'viewer.menu.roomName': '房间名',
+  'host.menu.roomName': '房间名',
   'host.menu.layer.new': '新增图层',
   'host.menu.layer.camera': '摄像头',
   'host.menu.layer.screen': '屏幕',

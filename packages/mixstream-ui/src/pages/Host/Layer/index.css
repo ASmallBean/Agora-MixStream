@@ -10,3 +10,7 @@
   overflow: auto;
   overflow: hidden;
 }
+
+.layer.mirror {
+  transform: rotateY(180deg);
+}

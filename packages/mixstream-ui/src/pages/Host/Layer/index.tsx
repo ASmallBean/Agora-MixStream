@@ -1,4 +1,5 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
+import cls from 'classnames';
 import _ from 'lodash';
 import { FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
@@ -13,6 +14,7 @@ import {
   WindowInfo,
 } from '../../../engine';
 import { useStream } from '../../../hooks/stream';
+import { isWindows } from '../../../utils';
 import './index.css';
 
 export enum LayerType {
@@ -294,7 +296,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
 
   return (
     <div
-      className={`layer container ${className ? className : ''}`}
+      className={cls({ layer: 1, container: 1, [className || '']: !!className, mirror: isWindows() })}
       style={layout}
       onContextMenu={handleContextMenu}
       ref={domRef}

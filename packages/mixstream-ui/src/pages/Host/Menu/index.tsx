@@ -296,20 +296,21 @@ const HostMenu = () => {
         {play ? <AiOutlinePauseCircle size={22} /> : <AiOutlinePlayCircle size={22} />}
       </Button>
       {/* 退出频道 */}
-      <Button
-        className="quiteChannel"
-        title={intl.formatMessage({
-          id: 'host.menu.quit.channel',
-        })}
-        onClick={() => {
-          globalEvent.emit(GlobalEvent.QuitChannel);
-        }}
-      >
+      <div className="room">
         <div className="roomName">
           {intl.formatMessage({ id: 'host.menu.roomName' })}: {channel}
         </div>
-        <BsBoxArrowLeft size={21} />
-      </Button>
+        <BsBoxArrowLeft
+          className="quit"
+          size={21}
+          title={intl.formatMessage({
+            id: 'host.menu.quit.channel',
+          })}
+          onClick={() => {
+            globalEvent.emit(GlobalEvent.QuitChannel);
+          }}
+        />
+      </div>
       <CameraSelector
         visible={cameraVisible}
         onCancel={() => {

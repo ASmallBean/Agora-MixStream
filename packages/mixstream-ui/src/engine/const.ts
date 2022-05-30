@@ -1,5 +1,6 @@
 import { LocalTranscoderConfiguration, VideoEncoderConfiguration } from 'agora-electron-sdk/types/Api/native_type';
 import { LayerConfig } from '../pages/Host/Layer';
+import { isMacOS } from '../utils';
 import {
   DEGRADATION_PREFERENCE,
   MEDIA_SOURCE_TYPE,
@@ -81,7 +82,7 @@ export function layer2TranscodingConfig(
       remoteUserUid: 0,
       imageUrl: '',
       alpha: 1,
-      mirror: true,
+      mirror: isMacOS(),
     };
   });
 

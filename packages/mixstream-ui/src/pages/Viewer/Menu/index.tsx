@@ -1,4 +1,3 @@
-import { Button } from 'antd';
 import { BsBoxArrowLeft } from 'react-icons/bs';
 import { useIntl } from 'react-intl';
 import { useSession } from '../../../hooks/session';
@@ -10,20 +9,21 @@ const ViewMenu = () => {
   const { channel } = useSession();
   return (
     <div className="viewer-menu">
-      <Button
-        className="quiteChannel"
-        title={intl.formatMessage({
-          id: 'host.menu.quit.channel',
-        })}
-        onClick={() => {
-          globalEvent.emit(GlobalEvent.QuitChannel);
-        }}
-      >
+      <div className="room">
         <div className="roomName">
           {intl.formatMessage({ id: 'host.menu.roomName' })}: {channel}
         </div>
-        <BsBoxArrowLeft size={21} />
-      </Button>
+        <BsBoxArrowLeft
+          className="quit"
+          size={21}
+          title={intl.formatMessage({
+            id: 'host.menu.quit.channel',
+          })}
+          onClick={() => {
+            globalEvent.emit(GlobalEvent.QuitChannel);
+          }}
+        />
+      </div>
     </div>
   );
 };

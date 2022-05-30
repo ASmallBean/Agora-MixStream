@@ -2,7 +2,7 @@ name: CI-UI
 on:
   push:
     tags:
-      - 'app@*.*.*'
+      - '*.*.*'
 jobs:
   build-ui:
     runs-on: ${{ matrix.os }}

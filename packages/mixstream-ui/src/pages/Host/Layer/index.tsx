@@ -1,5 +1,6 @@
 import { ScreenCaptureConfiguration } from 'agora-electron-sdk/types/Api/native_type';
-import { FC, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import _ from 'lodash';
+import { FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { Item, ItemParams, Menu, useContextMenu } from 'react-contexify';
 import { useMount, useWindowSize } from 'react-use';
 import {
@@ -71,31 +72,39 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
   const domRef = useRef<HTMLDivElement>(null);
   const { updateStreams, resolution } = useStream();
   const { width: windowWidth } = useWindowSize();
-
-  const canvasSize = useMemo(() => {
-    return {
-      width: windowWidth * 0.8, // 80vw
-      height: windowWidth * 0.45, // 45vw
-    };
-  }, [windowWidth]);
-
-  const canvasSizeRef = useRef({ ...canvasSize });
+  const [canvasSize, setCanvasSize] = useState<Size>({
+    width: windowWidth * 0.8, // 80vw
+    height: windowWidth * 0.45, // 45vw
+  });
 
   const [layout, setLayout] = useState<Layout>({
-    width: canvasSize.width,
-    height: canvasSize.height,
+    ...canvasSize,
     left: 0,
     top: 0,
     zIndex: 100,
   });
 
+  const throttleResize = useCallback(
+    _.debounce((windowWidth) => {
+      const currentCanvas = {
+        width: windowWidth * 0.8, // 80vw
+        height: windowWidth * 0.45, // 45vw
+      };
+      let copyPreCanvasSize = { width: 0, height: 0 };
+      setCanvasSize((preCanvasSize) => {
+        copyPreCanvasSize = { ...preCanvasSize };
+        return currentCanvas;
+      });
+      setLayout((pre) => {
+        const result = computeEquidistantLayout(copyPreCanvasSize, currentCanvas, pre);
+        return result;
+      });
+    }, 1000),
+    []
+  );
   useEffect(() => {
-    setLayout((pre) => {
-      const result = computeEquidistantLayout(canvasSizeRef.current, canvasSize, pre);
-      canvasSizeRef.current = { ...canvasSize };
-      return result;
-    });
-  }, [canvasSize]);
+    throttleResize(windowWidth);
+  }, [throttleResize, windowWidth]);
 
   // 换算图层在合图的时候的布局数据
   useEffect(() => {
@@ -416,17 +425,27 @@ function computeEquidistantLayout(origin: Size, target: Size, layout: Layout) {
   const { width: targetWidth, height: targetHeight } = target;
   const { width: originWidth, height: originHeight } = origin;
   const { width: layoutWidth, height: layoutHeight, left: layoutLeft, top: layoutTop, zIndex } = layout;
-  const left = computeEquidistant(originWidth, targetWidth, layoutLeft);
-  const top = computeEquidistant(originHeight, targetHeight, layoutTop);
   const width = computeEquidistant(originWidth, targetWidth, layoutWidth);
   const height = computeEquidistant(originHeight, targetHeight, layoutHeight);
-  return {
+  const left = computeEquidistant(originWidth, targetWidth, layoutLeft);
+  const top = computeEquidistant(originHeight, targetHeight, layoutTop);
+
+  const result = {
     left,
     top,
     width,
     height,
     zIndex,
   };
+  console.log('🚀 computeEquidistantLayout ', {
+    origin,
+    target,
+  });
+  console.log('🚀 computeEquidistantLayout ', {
+    layout,
+    result,
+  });
+  return result;
 }
 
 function computeEquidistant(origin: number, target: number, current: number) {

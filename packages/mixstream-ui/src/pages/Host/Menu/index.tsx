@@ -42,9 +42,7 @@ const HostMenu = () => {
   const { rtcEngine } = useEngine();
   const { setLoading } = useGlobal();
   const { channel } = useSession();
-
   const { profile } = useProfile();
-
   const [cameraDevices, setCameraDevices] = useState<DeviceInfo[]>([]);
   const whiteboardRef = useRef<WhiteboardBrowserWindow | null>(null);
   const {
@@ -182,6 +180,7 @@ const HostMenu = () => {
       setWhiteboard(false);
       whiteboardRef.current?.destroyWindow();
       whiteboardRef.current = null;
+      setWhiteboard(false);
       const item = streams.find((v) => v.name === WhiteboardTitle);
       item && removeStream(item.sourceType);
     };
@@ -208,6 +207,7 @@ const HostMenu = () => {
       <Dropdown overlay={createLayerMenu} placement="bottomLeft">
         <Button>{intl.formatMessage({ id: 'host.menu.layer.new' })}</Button>
       </Dropdown>
+      {/* 白板 */}
       <Button
         disabled={whiteboard}
         onClick={_.throttle(async () => {
@@ -232,7 +232,7 @@ const HostMenu = () => {
       >
         {intl.formatMessage({ id: 'host.menu.whiteboard.create' })}
       </Button>
-
+      {/* 分辨率 */}
       <Select
         style={{ width: 120 }}
         value={resolution}

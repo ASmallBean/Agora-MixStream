@@ -24,7 +24,6 @@ export interface LayerConfig {
   type: LayerType;
   sourceType: VIDEO_SOURCE_TYPE;
   name: string;
-
   deviceId: string; // 摄像头的id
   zOrder: number; // default: 300
   isCaptureWindow: boolean; // 用来区分 LayerType.SCREEN 是窗口还是显示器
@@ -85,6 +84,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
     zIndex: 100,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const throttleResize = useCallback(
     _.debounce((windowWidth) => {
       const currentCanvas = {

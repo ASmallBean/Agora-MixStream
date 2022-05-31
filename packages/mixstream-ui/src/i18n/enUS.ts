@@ -29,6 +29,7 @@ const message = {
   'host.menu.layer.camera': 'Camera',
   'host.menu.layer.screen': 'Screen',
   'host.menu.layer.whiteboard': 'Whiteboard',
+  'host.menu.screen.overLimit': 'The current maximum share an application window',
   'host.menu.whiteboard.create': 'Create Whiteboard',
   'host.menu.audio.on': 'Open Audio',
   'host.menu.audio.off': 'Close Audio',

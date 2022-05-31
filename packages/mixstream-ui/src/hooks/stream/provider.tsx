@@ -1,7 +1,10 @@
+import { message } from 'antd';
 import { FC, PropsWithChildren, useCallback, useMemo, useState } from 'react';
+import { useIntl } from 'react-intl';
 import { bitrateList, VIDEO_SOURCE_TYPE } from '../../engine';
 import { LayerConfig } from '../../pages/Host/Layer';
 import { WhiteboardTitle } from '../../pages/Whiteboard';
+import { isMacOS } from '../../utils';
 import { StreamContext } from './context';
 
 export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
@@ -9,6 +12,7 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const [resolution, setResolution] = useState(bitrateList[0]);
   const [play, setPlay] = useState(false);
   const [audio, setAudio] = useState(true);
+  const intl = useIntl();
 
   const shareScreen = useMemo(() => {
     return streams.filter((v) => v.sourceType >= 2).length < 2;
@@ -32,44 +36,54 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
     return [0, 1].filter((v) => !arr.includes(v));
   }, [streams]);
 
-  const addStream = useCallback((data: LayerConfig) => {
-    setStreams((pre) => {
-      const item = pre.find((v) => v.sourceType === data.sourceType);
-      // 当前流通道没有被占用
-      if (!item) {
-        return [...pre, data];
-      }
-      const typeArr = pre.map((v) => v.sourceType);
-      // 当前流通道没被占用，查找有没有空闲通道，有则自动分配
-      switch (item.sourceType) {
-        case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY:
-          if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY)) {
-            data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY;
-            return [...pre, data];
+  const addStream = useCallback(
+    (data: LayerConfig) => {
+      setStreams((pre) => {
+        if (isMacOS() && data.sourceType >= 2) {
+          const hasWindow = pre.some((v) => v.isCaptureWindow);
+          if (hasWindow) {
+            message.warn(intl.formatMessage({ id: 'host.menu.screen.overLimit' }));
+            return pre;
           }
-          break;
-        case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY:
-          if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY)) {
-            data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY;
-            return [...pre, data];
-          }
-          break;
-        case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY:
-          if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY)) {
-            data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY;
-            return [...pre, data];
-          }
-          break;
-        case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY:
-          if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY)) {
-            data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY;
-            return [...pre, data];
-          }
-          break;
-      }
-      return pre;
-    });
-  }, []);
+        }
+        const item = pre.find((v) => v.sourceType === data.sourceType);
+        // 当前流通道没有被占用
+        if (!item) {
+          return [...pre, data];
+        }
+        const typeArr = pre.map((v) => v.sourceType);
+        // 当前流通道被占用，查找有没有空闲通道，有则自动分配
+        switch (item.sourceType) {
+          case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY:
+            if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY)) {
+              data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY;
+              return [...pre, data];
+            }
+            break;
+          case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_SECONDARY:
+            if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY)) {
+              data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_CAMERA_PRIMARY;
+              return [...pre, data];
+            }
+            break;
+          case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY:
+            if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY)) {
+              data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY;
+              return [...pre, data];
+            }
+            break;
+          case VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_SECONDARY:
+            if (!typeArr.includes(VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY)) {
+              data.sourceType = VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY;
+              return [...pre, data];
+            }
+            break;
+        }
+        return pre;
+      });
+    },
+    [intl]
+  );
 
   const removeStream = useCallback((type: LayerConfig['sourceType']) => {
     setStreams((pre) => {

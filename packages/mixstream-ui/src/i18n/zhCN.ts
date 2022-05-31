@@ -30,6 +30,7 @@ const message = {
   'host.menu.layer.screen': '屏幕',
   'host.menu.layer.whiteboard': '白板',
   'host.menu.whiteboard.create': '创建白板工具',
+  'host.menu.screen.overLimit': '当前最多支持分享一个应用窗口',
   'host.menu.audio.on': '开启音频',
   'host.menu.audio.off': '关闭音频',
   'host.menu.play.on': '开始直播',

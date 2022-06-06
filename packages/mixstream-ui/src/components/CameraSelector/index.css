@@ -1,0 +1,12 @@
+.camera-selector .camera-container {
+  width: 400px;
+  height: 225px;
+  margin: 0 auto 25px;
+}
+.camera-selector .ant-select {
+  width: 100%;
+}
+
+.camera-selector .ant-form .ant-row:last-child {
+  margin-bottom: 10px;
+}

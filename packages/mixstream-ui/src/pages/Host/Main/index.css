@@ -1,0 +1,9 @@
+.hostMain {
+  width: 80vw;
+  height: 45vw;
+  position: relative;
+  background: #fff;
+}
+.hostMain .view {
+  position: absolute;
+}

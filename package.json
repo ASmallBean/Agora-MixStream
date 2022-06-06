@@ -1,0 +1,23 @@
+{
+  "name": "agora-mixstream",
+  "version": "0.0.1-alpha.6",
+  "private": true,
+  "description": "混合流",
+  "scripts": {
+    "start": "pnpm run start -r --parallel",
+    "build": "pnpm run build -r --stream",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "husky": "^7.0.4",
+    "prettier": "^2.6.2"
+  },
+  "agora_electron": {
+    "electron_version": "12.0.0",
+    "prebuilt": true,
+    "arch": "x64"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

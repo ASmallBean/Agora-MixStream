@@ -12,6 +12,8 @@ const message = {
   'landing.validate.name.min': 'Name must be greater than 3 characters.',
   'landing.validate.role.required': 'Please select role.',
   'landing.request.error.role': 'The current room host is already full',
+  'modal.screen.selector.tip':
+    'Tip: Minimize window can be shared. Please add again after amplification minimize window screen sharing.',
   'modal.screen.selector.resolution': 'Resolution',
   'modal.screen.selector.title': 'Please select screen or window which you want to share.',
   'modal.screen.selector.ok': 'Share',

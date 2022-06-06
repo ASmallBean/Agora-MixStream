@@ -12,6 +12,7 @@ const message = {
   'landing.request.error.role': '当前房间主播已经满了',
   'landing.validate.name.min': '昵称长度必须大于3个字符',
   'landing.validate.role.required': '请选择角色',
+  'modal.screen.selector.tip': '温馨提示：最小化的窗口无法被共享，请放大最小化的窗口后，重新进行添加屏幕共享',
   'modal.screen.selector.title': '请选择你想要共享的屏幕或窗口',
   'modal.screen.selector.resolution': '分辨率',
   'modal.screen.selector.ok': '确认共享',

@@ -1,11 +1,24 @@
 .screen-selector .ant-modal-body {
   min-height: 360px;
 }
-.screen-screen-options {
+.screen-selector .screen-screen-options {
   padding-bottom: 8px;
 }
 
-.list {
+.screen-selector .tip {
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.screen-selector .tip .icon {
+  color: #ffab00;
+  font-size: 17px;
+  margin-right: 3px;
+}
+.screen-selector .list {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -17,7 +30,7 @@
   border-radius: 4px;
 }
 
-.list .item {
+.screen-selector .list .item {
   margin: 10px;
   width: 230px;
   background: #efefef78;
@@ -26,28 +39,28 @@
   border-radius: 6px;
 }
 
-.list .item.checked {
+.screen-selector .list .item.checked {
   background-color: #177ddc;
   border-color: #177ddc;
 }
 
-.list .item:hover {
+.screen-selector .list .item:hover {
   border-color: #177ddc;
 }
 
-.list .item .thumbnail {
+.screen-selector .list .item .thumbnail {
   height: 120px;
   width: 100%;
   cursor: pointer;
   text-align: center;
 }
 
-.list .item .thumbnail > img {
+.screen-selector .list .item .thumbnail > img {
   max-height: 100%;
   max-width: 100%;
 }
 
-.list .item .name {
+.screen-selector .list .item .name {
   font-size: 14px;
   margin-top: 5px;
   text-overflow: ellipsis;
@@ -55,6 +68,6 @@
   text-align: center;
   white-space: nowrap;
 }
-.list .item.checked .name {
+.screen-selector .list .item.checked .name {
   color: #fff;
 }

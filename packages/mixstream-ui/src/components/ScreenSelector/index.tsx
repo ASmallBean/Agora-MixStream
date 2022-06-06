@@ -1,6 +1,7 @@
 import { Modal } from 'antd';
 import cls from 'classnames';
 import { FC, useState } from 'react';
+import { AiFillInfoCircle } from 'react-icons/ai';
 import { useIntl } from 'react-intl';
 import { DisplayInfo, ShareScreenType, WindowInfo } from '../../engine';
 import './index.css';
@@ -81,6 +82,10 @@ export const ScreenSelector: FC<ScreenSelectorProps> = (props) => {
       width={833}
       onCancel={onCancel}
     >
+      <div className="tip">
+        <AiFillInfoCircle className="icon" />
+        {intl.formatMessage({ id: `modal.screen.selector.tip` })}
+      </div>
       <div className="list">
         {displays.map((item, index) => {
           const { id } = item.displayId;

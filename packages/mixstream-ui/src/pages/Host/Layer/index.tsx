@@ -205,11 +205,6 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
         const {
           origin: { width, height },
           sourceType,
-          displayId,
-          isCaptureWindow,
-          windowId,
-          frameRate,
-          bitrate,
         } = layerConfig;
         setLayout((pre) => {
           // 这里的计算是为了让画布中图层和源的高宽比保持一致,高宽最大值不能超过一定值
@@ -247,20 +242,7 @@ const Layer: FC<LayerProps> = ({ className, rtcEngine, data, remove }) => {
           }
         });
 
-        const screenCaptureConfig: ScreenCaptureConfiguration = {
-          isCaptureWindow: isCaptureWindow,
-          displayId: displayId,
-          windowId: windowId,
-          params: {
-            width: width,
-            height: height,
-            frameRate: frameRate,
-            bitrate: bitrate,
-          },
-          screenRect: ScreenCaptureFullScreenRect,
-          regionRect: ScreenCaptureFullScreenRect,
-        };
-
+        const screenCaptureConfig = getScreenCaptureConfigByLayerConfig(layerConfig);
         let code;
         code = rtcEngine.startScreenCapture(sourceType, screenCaptureConfig);
         if (code !== 0) {
@@ -430,25 +412,46 @@ function computeEquidistantLayout(origin: Size, target: Size, layout: Layout) {
   const height = computeEquidistant(originHeight, targetHeight, layoutHeight);
   const left = computeEquidistant(originWidth, targetWidth, layoutLeft);
   const top = computeEquidistant(originHeight, targetHeight, layoutTop);
-
-  const result = {
+  return {
     left,
     top,
     width,
     height,
     zIndex,
   };
-  console.log('🚀 computeEquidistantLayout ', {
-    origin,
-    target,
-  });
-  console.log('🚀 computeEquidistantLayout ', {
-    layout,
-    result,
-  });
-  return result;
 }
 
 function computeEquidistant(origin: number, target: number, current: number) {
   return (target * current) / origin;
+}
+
+function getScreenCaptureConfigByLayerConfig(layerConfig: LayerConfig) {
+  const {
+    origin: { width, height },
+    displayId,
+    isCaptureWindow,
+    windowId,
+    frameRate,
+    bitrate,
+  } = layerConfig;
+
+  const screenCaptureConfig: ScreenCaptureConfiguration = {
+    isCaptureWindow: isCaptureWindow,
+    displayId: displayId,
+    windowId: windowId,
+    params: {
+      width: width,
+      height: height,
+      frameRate: frameRate,
+      bitrate: bitrate,
+    },
+    screenRect: {
+      width: width,
+      height: height,
+      x: 0,
+      y: 0,
+    },
+    regionRect: ScreenCaptureFullScreenRect,
+  };
+  return screenCaptureConfig;
 }

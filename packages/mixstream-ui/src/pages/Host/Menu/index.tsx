@@ -84,9 +84,11 @@ const HostMenu = () => {
       if (freeScreenCaptureSource.length) {
         switch (type) {
           case ShareScreenType.Display:
+            console.log('🚀 ~ 分享屏幕', data);
             addStream(getLayerConfigFromDisplayInfo(data as DisplayInfo, freeScreenCaptureSource[0]));
             break;
           case ShareScreenType.Window:
+            console.log('🚀 ~ 分享窗口', data);
             addStream(getLayerConfigFromWindowInfo(data as WindowInfo, freeScreenCaptureSource[0]));
             break;
         }

@@ -9,7 +9,7 @@ import {
 import EventEmitter from 'eventemitter3';
 import { LayerConfig } from '../pages/Host/Layer';
 import { isMacOS } from '../utils';
-import { layer2TranscodingConfig, ScreenCaptureFullScreenRect } from './const';
+import { layer2TranscodingConfig } from './const';
 import { ChannelInfo, DeviceInfo, DisplayInfo, VIDEO_SOURCE_TYPE, WindowInfo } from './type';
 
 const LOGS_FOLDER = isMacOS() ? `${window.process.env.HOME}/Library/Logs/MixStreamClient` : './log';
@@ -277,42 +277,5 @@ export class RtcEngine extends EventEmitter {
 
   async getScreenWindowsInfo() {
     return this._rtcEngine.getScreenWindowsInfo() as WindowInfo[];
-  }
-
-  async getScreenCaptureConfigByDisplay(data: DisplayInfo): Promise<ScreenCaptureConfiguration> {
-    const {
-      displayId: { id, ...screenRect },
-    } = data;
-    return {
-      isCaptureWindow: false,
-      displayId: id,
-      screenRect: screenRect,
-      windowId: 0,
-      params: {
-        width: screenRect.width,
-        height: screenRect.height,
-        frameRate: 15,
-        bitrate: 2000,
-      },
-      regionRect: screenRect,
-    };
-  }
-
-  async getScreenCaptureConfigByWindow(data: WindowInfo): Promise<ScreenCaptureConfiguration> {
-    const { windowId, width, height, x, y } = data;
-    const rect = { width, height, x, y };
-    return {
-      isCaptureWindow: true,
-      displayId: 0,
-      screenRect: rect,
-      windowId: windowId,
-      params: {
-        width: width,
-        height: height,
-        frameRate: 15,
-        bitrate: 2000,
-      },
-      regionRect: ScreenCaptureFullScreenRect,
-    };
   }
 }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, Menu, screen } from 'electron';
 
 const __DEV__ = process.env.NODE_ENV === 'development';
 
@@ -38,6 +38,9 @@ async function createWindow() {
     e.preventDefault();
     win.webContents.send('process_close');
   });
+
+  /*隐藏electron的菜单栏*/
+  Menu.setApplicationMenu(null);
   return win;
 }
 

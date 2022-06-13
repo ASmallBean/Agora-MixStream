@@ -39,6 +39,7 @@ export const StreamProvider: FC<PropsWithChildren<{}>> = ({ children }) => {
   const addStream = useCallback(
     (data: LayerConfig) => {
       setStreams((pre) => {
+        // FIXME:这段逻辑是因为electron在macos上有bug，不能同时分享两个窗口
         if (isMacOS() && data.sourceType >= 2) {
           const hasWindow = pre.some((v) => v.isCaptureWindow);
           if (hasWindow) {

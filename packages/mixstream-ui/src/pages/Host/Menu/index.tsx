@@ -24,7 +24,7 @@ import { useProfile } from '../../../hooks/profile';
 import { useSession } from '../../../hooks/session';
 import { useStream } from '../../../hooks/stream';
 import { findVideoStreamFromProfile } from '../../../services/api';
-import { addCloseHandle, appPath, isDev, removeCloseHandle } from '../../../utils';
+import { addCloseHandle, appPath, isDev, isMacOS, removeCloseHandle } from '../../../utils';
 import { GlobalEvent, globalEvent } from '../../../utils/event';
 import { WhiteboardTitle } from '../../Whiteboard';
 import WhiteboardBrowserWindow from '../../Whiteboard/BrowersWindow';
@@ -84,11 +84,9 @@ const HostMenu = () => {
       if (freeScreenCaptureSource.length) {
         switch (type) {
           case ShareScreenType.Display:
-            console.log('🚀 ~ 分享屏幕', data);
             addStream(getLayerConfigFromDisplayInfo(data as DisplayInfo, freeScreenCaptureSource[0]));
             break;
           case ShareScreenType.Window:
-            console.log('🚀 ~ 分享窗口', data);
             addStream(getLayerConfigFromWindowInfo(data as WindowInfo, freeScreenCaptureSource[0]));
             break;
         }
@@ -98,7 +96,11 @@ const HostMenu = () => {
   );
 
   const openScreenSelector = () => {
-    Promise.all([rtcEngine?.getScreenDisplaysInfo(), rtcEngine?.getScreenWindowsInfo()])
+    Promise.all([
+      rtcEngine?.getScreenDisplaysInfo(),
+      // FIXME:这段逻辑是因为electron sdk 在 window 上bug,分享窗口被遮挡的时候会出现捕获不到画面的问题
+      isMacOS() ? rtcEngine?.getScreenWindowsInfo() : Promise.resolve([]),
+    ])
       .then(([displays, windows]) => {
         setDisplayList(displays || []);
         setWindowList(windows || []);

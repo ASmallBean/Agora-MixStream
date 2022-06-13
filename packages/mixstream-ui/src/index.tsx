@@ -6,7 +6,7 @@ import App from './App';
 import Language from './components/Language';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
-import { closeHandle } from './utils';
+import { closeHandle, disableDevTools, isProd } from './utils';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
@@ -20,3 +20,7 @@ root.render(
 ipcRenderer.on('process_close', closeHandle);
 
 reportWebVitals();
+
+if (isProd) {
+  disableDevTools();
+}

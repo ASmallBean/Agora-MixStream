@@ -21,7 +21,7 @@ const ViewerMain = () => {
       return;
     }
     const { token, uid } = stream;
-    console.log('🚀 用户信息 ', { token, uid, channel });
+    console.log('🚀 userInfo ', { token, uid, channel });
     rtcEngine.joinChannelWithMediaOptions(token, channel, uid);
 
     const handle = (data: { connId: { channelId: string; localUid: number }; uid: number }) => {

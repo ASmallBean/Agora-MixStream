@@ -15,7 +15,8 @@ const message = {
   'modal.screen.selector.tip':
     'Tip: Minimize window can be shared. Please add again after amplification minimize window screen sharing.',
   'modal.screen.selector.resolution': 'Resolution',
-  'modal.screen.selector.title': 'Please select screen or window which you want to share.',
+  'modal.screen.selector.title.win': 'Please select screen which you want to share.',
+  'modal.screen.selector.title.mac': 'Please select screen or window which you want to share.',
   'modal.screen.selector.ok': 'Share',
   'modal.screen.selector.tab.display': 'Desktop',
   'modal.screen.selector.tab.window': 'Windows',

@@ -1,9 +1,10 @@
 import { Modal } from 'antd';
 import cls from 'classnames';
-import { FC, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { AiFillInfoCircle } from 'react-icons/ai';
 import { useIntl } from 'react-intl';
 import { DisplayInfo, ShareScreenType, WindowInfo } from '../../engine';
+import { isMacOS } from '../../utils';
 import './index.css';
 
 export interface ScreenSelectorHandler {
@@ -71,10 +72,23 @@ export const ScreenSelector: FC<ScreenSelectorProps> = (props) => {
     }
   };
 
+  const Tip = useMemo(() => {
+    return isMacOS() ? (
+      <div className="tip">
+        <AiFillInfoCircle className="icon" />
+        {intl.formatMessage({ id: `modal.screen.selector.tip` })}
+      </div>
+    ) : (
+      ''
+    );
+  }, [intl]);
+
   return (
     <Modal
       wrapClassName="screen-selector"
-      title={intl.formatMessage({ id: `modal.screen.selector.title` })}
+      title={intl.formatMessage({
+        id: isMacOS() ? `modal.screen.selector.title.mac` : `modal.screen.selector.title.win`,
+      })}
       okText={intl.formatMessage({ id: `modal.screen.selector.ok` })}
       visible={visible}
       onOk={handleOk}
@@ -82,10 +96,7 @@ export const ScreenSelector: FC<ScreenSelectorProps> = (props) => {
       width={833}
       onCancel={onCancel}
     >
-      <div className="tip">
-        <AiFillInfoCircle className="icon" />
-        {intl.formatMessage({ id: `modal.screen.selector.tip` })}
-      </div>
+      {Tip}
       <div className="list">
         {displays.map((item, index) => {
           const { id } = item.displayId;

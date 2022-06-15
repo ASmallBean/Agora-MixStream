@@ -16,6 +16,7 @@ jobs:
 
       - uses: actions/cache@v3
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           path: '~/.pnpm-store'
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |

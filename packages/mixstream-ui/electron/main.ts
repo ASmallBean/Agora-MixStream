@@ -32,15 +32,14 @@ async function createWindow() {
     win.webContents.openDevTools();
     win.loadURL('http://localhost:3000');
   } else {
+    /*隐藏electron的菜单栏*/
+    Menu.setApplicationMenu(null);
     win.loadFile('build/index.html');
   }
   win.on('close', (e) => {
     e.preventDefault();
     win.webContents.send('process_close');
   });
-
-  /*隐藏electron的菜单栏*/
-  Menu.setApplicationMenu(null);
   return win;
 }
 

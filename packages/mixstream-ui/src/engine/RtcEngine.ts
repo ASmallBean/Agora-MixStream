@@ -209,8 +209,10 @@ export class RtcEngine extends EventEmitter {
   startScreenCapture(type: VIDEO_SOURCE_TYPE, config: ScreenCaptureConfiguration) {
     const isPrimary = type === VIDEO_SOURCE_TYPE.VIDEO_SOURCE_SCREEN_PRIMARY;
     let code = isPrimary
-      ? this._rtcEngine.startPrimaryScreenCapture(config)
-      : this._rtcEngine.startSecondaryScreenCapture(config);
+      ? this._rtcEngine.startScreenCaptureByWindow(config.windowId, config.screenRect, config.params as any)
+      : this._rtcEngine.startScreenCaptureByWindow(config.windowId, config.screenRect, config.params as any);
+    // ? this._rtcEngine.startPrimaryScreenCapture(config)
+    // : this._rtcEngine.startSecondaryScreenCapture(config);
     if (code !== 0) {
       throw new Error(
         `Failed to screen share ${

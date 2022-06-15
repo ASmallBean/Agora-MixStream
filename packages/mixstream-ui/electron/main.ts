@@ -40,7 +40,9 @@ async function createWindow() {
   });
 
   /*隐藏electron的菜单栏*/
-  Menu.setApplicationMenu(null);
+  if (!__DEV__) {
+    Menu.setApplicationMenu(null);
+  }
   return win;
 }
 
